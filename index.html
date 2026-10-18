@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="en" data-theme="light" data-bg="blossom">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Calendar</title>
+<link rel="icon" id="favicon" href="data:,">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Macondo&family=Rye&family=Patrick+Hand&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="theme-color" content="#ffc4dd">
+<script>
+/* Coming back from Google/Outlook sign-in (online mode): tell the main window, then close this one. */
+(function () {
+  var m = location.hash.match(/oauth_(ok|error)=([^&]*)/); if (!m) return;
+  var v = decodeURIComponent(m[2]), msg = { type: 'glasscal-auth', ok: m[1] === 'ok', email: v, error: v };
+  try { var bc = new BroadcastChannel('glasscal-auth'); bc.postMessage(msg); bc.close(); } catch (e) { }
+  try { if (window.opener) window.opener.postMessage(msg, location.origin); } catch (e) { }
+  history.replaceState(null, '', location.pathname + location.search);
+  if (window.opener || window.name === 'glasscal-auth') {
+    document.title = 'Calendar';
+    document.body ? 0 : document.write('<body></body>');
+    document.body.style.cssText = 'font:16px system-ui,sans-serif;display:grid;place-items:center;height:100vh;margin:0;text-align:center;padding:24px';
+    document.body.textContent = msg.ok ? 'Connected ' + v + '. You can close this window.' : 'Sign-in did not finish: ' + v;
+    setTimeout(function () { window.close(); }, 900);
+    window.stop();
+  }
+})();
+</script>
+</head>
+<body>
+<div class="bg" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+
+<div class="app" id="app">
+  <header class="topbar glass">
+    <button class="ib" id="menuBtn" data-icon="menu" title="Toggle sidebar"></button>
+    <div class="brand"><span class="logo" id="logo"></span><span class="brand-t">Calendar</span></div>
+    <button class="ib back-btn" id="backBtn" data-icon="back" title="Back to where you were (Backspace)" disabled></button>
+    <button class="btn" id="todayBtn" data-icon="today" title="Today (T)"><span>Today</span></button>
+    <label class="field search">
+      <span data-icon="search"></span>
+      <input id="searchInput" type="search" placeholder="Search events" title="Search (/)">
+    </label>
+    <div class="spacer"></div>
+    <div class="seg" id="viewSeg" role="tablist">
+      <button data-view="day" data-icon="vDay" title="Day (D)"><span>Day</span></button>
+      <button data-view="workweek" data-icon="vWork" title="Work week (X)"><span>Work week</span></button>
+      <button data-view="week" data-icon="vWeek" title="Week (W)"><span>Week</span></button>
+      <button data-view="month" data-icon="vMonth" title="Month (M)"><span>Month</span></button>
+      <button data-view="year" data-icon="vYear" title="Year (Y)"><span>Year</span></button>
+      <button data-view="agenda" data-icon="vAgenda" title="Agenda (A)"><span>Agenda</span></button>
+    </div>
+    <button class="ib" id="syncBtn" data-icon="refresh" title="Sync now"></button>
+    <button class="ib" id="bellBtn" data-icon="bell" title="Desktop reminders"></button>
+    <button class="ib" id="themeBtn" title="Light / dark (L)"></button>
+    <button class="ib" id="settingsBtn" data-icon="settings" title="Settings"></button>
+  </header>
+
+  <aside class="sidebar glass" id="sidebar">
+    <button class="btn primary new" id="newBtn" data-icon="plus" title="New event (N)"><span>New event</span></button>
+    <div class="mini" id="mini"></div>
+    <div class="upnext" id="upnext"></div>
+    <div class="cal-head">
+      <h3></h3>
+      <button class="ib sm" id="addCalBtn" data-icon="calPlus" title="Add calendar"></button>
+      <button class="ib sm" id="addGroupBtn" data-icon="folderPlus" title="Add group / account"></button>
+    </div>
+    <div id="calList"></div>
+    <div class="side-foot">
+      <button class="btn ghost" id="importBtn" data-icon="upload"><span>Import</span></button>
+      <button class="btn ghost" id="helpBtn" data-icon="keyboard"><span>Shortcuts</span></button>
+    </div>
+  </aside>
+
+  <main class="main glass" id="view"></main>
+</div>
+
+<div class="pop glass" id="pop" hidden></div>
+<div class="peek glass" id="peek" hidden role="dialog" aria-label="Event details"></div>
+<div class="toasts" id="toasts"></div>
+
+<!-- Event editor -->
+<dialog id="dlgEvent" class="dlg glass">
+  <form method="dialog" id="evForm">
+    <div class="ev-head">
+      <button type="button" class="icon-pick" id="evIconBtn" title="Choose an icon"></button>
+      <input id="evTitle" placeholder="Add a title" autocomplete="off">
+      <button type="button" class="ib" data-close data-icon="x" title="Close (Esc)"></button>
+    </div>
+    <div class="emoji-pop glass" id="evIconPop" hidden></div>
+    <div class="rows">
+      <div class="row"><span data-icon="calendar"></span><select id="evCal"></select></div>
+      <div class="row wrap"><span data-icon="clock"></span>
+        <input type="date" id="evSD"><input type="time" id="evST" step="300">
+        <span class="to">to</span>
+        <input type="date" id="evED"><input type="time" id="evET" step="300">
+        <label class="toggle"><input type="checkbox" id="evAll"><i></i>All day</label>
+      </div>
+      <div class="row wrap"><span data-icon="repeat"></span>
+        <select id="evRep">
+          <option value="none">Does not repeat</option>
+          <option value="daily">Every day</option>
+          <option value="weekdays">Every weekday (Mon–Fri)</option>
+          <option value="weekly">Every week</option>
+          <option value="biweekly">Every 2 weeks</option>
+          <option value="monthly">Every month</option>
+          <option value="yearly">Every year</option>
+        </select>
+        <div class="daychips" id="evDays"></div>
+        <label class="until" id="untilWrap">until <input type="date" id="evUntil"></label>
+      </div>
+      <div class="row"><span data-icon="bell"></span>
+        <select id="evRem">
+          <option value="">No reminder</option>
+          <option value="0">At start time</option>
+          <option value="5">5 minutes before</option>
+          <option value="10">10 minutes before</option>
+          <option value="15">15 minutes before</option>
+          <option value="30">30 minutes before</option>
+          <option value="60">1 hour before</option>
+          <option value="120">2 hours before</option>
+          <option value="1440">1 day before</option>
+          <option value="10080">1 week before</option>
+        </select>
+      </div>
+      <div class="row"><span data-icon="pin"></span><input id="evLoc" placeholder="Add location or meeting link"></div>
+      <div class="row top"><span data-icon="users"></span>
+        <div class="guests">
+          <div class="guest-list" id="evGuestList"></div>
+          <input id="evGuestIn" type="email" placeholder="Add people — type an email address and press Enter" autocomplete="off" list="guestSuggest">
+          <datalist id="guestSuggest"></datalist>
+          <label class="toggle" id="evNotifyWrap" hidden><input type="checkbox" id="evNotify"><i></i>Email guests the invitation / changes</label>
+        </div>
+      </div>
+      <div class="row"><span data-icon="checkCircle"></span><label class="toggle"><input type="checkbox" id="evTask"><i></i>Task — show a tick box so I can mark it done</label></div>
+      <div class="row top"><span data-icon="note"></span><textarea id="evNotes" rows="3" placeholder="Add notes"></textarea></div>
+      <div class="row series-note" id="seriesRow" hidden><span data-icon="repeat"></span><span id="seriesText"></span></div>
+      <div class="row remote-note" id="remoteRow" hidden></div>
+      <div class="row ro-note" id="roNote"><span data-icon="eye"></span>This calendar is read-only.</div>
+    </div>
+    <div class="del-confirm" id="evDelConfirm" hidden>
+      <span>Delete which?</span>
+      <button type="button" class="btn sm" id="evDelThis">Only this one</button>
+      <button type="button" class="btn sm danger solid" id="evDelAll">All <b id="evDelAllN"></b></button>
+      <button type="button" class="btn ghost sm" id="evDelCancel">Cancel</button>
+    </div>
+    <footer>
+      <button type="button" class="btn danger" id="evDel" data-icon="trash"><span>Delete</span></button>
+      <button type="button" class="btn ghost" id="evDup" data-icon="copy" title="Duplicate"><span>Duplicate</span></button>
+      <span class="grow"></span>
+      <button type="button" class="btn" data-close>Cancel</button>
+      <button type="button" class="btn save-all" id="evSaveAll" data-icon="copy" title="Save these changes to every event in this group"><span>Save to all <b id="evSaveAllN"></b></span></button>
+      <button type="submit" class="btn primary" id="evSave" data-icon="check"><span id="evSaveLbl">Save</span></button>
+    </footer>
+  </form>
+</dialog>
+
+<!-- Calendar editor -->
+<dialog id="dlgCal" class="dlg glass small">
+  <form method="dialog" id="calForm">
+    <h2><span data-icon="calendar"></span><span id="calDlgTitle">Calendar</span></h2>
+    <label class="fld"><span>Name</span><input id="calName" placeholder="e.g. Work, Kids sport, School" autocomplete="off"></label>
+    <div class="fld"><span>Colour</span><div class="swatches" id="calSw"></div></div>
+    <div class="fld"><span>Icon</span><div class="emoji-row" id="calIcons"></div></div>
+    <label class="fld"><span>Group / account</span><select id="calGroup"></select></label>
+    <label class="fld" id="newGroupWrap" hidden><span>New group name</span><input id="calNewGroup" placeholder="e.g. Family, work@company.com"></label>
+    <footer>
+      <button type="button" class="btn danger" id="calDel" data-icon="trash"><span>Delete</span></button>
+      <button type="button" class="btn ghost" id="calExport" data-icon="download"><span>.ics</span></button>
+      <button type="button" class="btn ghost" id="calOnly" data-icon="eye"><span>Show only this</span></button>
+      <span class="grow"></span>
+      <button type="button" class="btn" data-close>Cancel</button>
+      <button type="submit" class="btn primary" data-icon="check"><span>Save</span></button>
+    </footer>
+  </form>
+</dialog>
+
+<!-- Import -->
+<dialog id="dlgImport" class="dlg glass small">
+  <form method="dialog" id="importForm">
+    <h2><span data-icon="upload"></span>Import calendars (.ics)</h2>
+    <p class="hint">Bring in your Outlook or Gmail calendars:</p>
+    <ul class="hint list">
+      <li><b>Google / Gmail:</b> calendar.google.com → Settings → <i>Import &amp; export</i> → <i>Export</i> (unzip, one .ics per calendar).</li>
+      <li><b>Outlook.com:</b> Settings → Calendar → <i>Shared calendars</i> → <i>Publish a calendar</i> → open the ICS link and save the file.</li>
+      <li><b>Outlook desktop:</b> File → <i>Save Calendar</i> → choose “Whole calendar”.</li>
+    </ul>
+    <label class="fld"><span>Files</span><input type="file" id="importFile" accept=".ics,text/calendar" multiple></label>
+    <label class="fld"><span>Add events to</span><select id="importTarget"></select></label>
+    <p class="hint">Importing the same file again updates events instead of duplicating them.</p>
+    <footer>
+      <span class="grow"></span>
+      <button type="button" class="btn" data-close>Cancel</button>
+      <button type="submit" class="btn primary" data-icon="upload"><span>Import</span></button>
+    </footer>
+  </form>
+</dialog>
+
+<!-- Settings -->
+<dialog id="dlgSettings" class="dlg glass small">
+  <form method="dialog" id="setForm">
+    <h2><span data-icon="settings"></span>Settings</h2>
+    <div class="fld"><span>Background</span><div class="bgs" id="setBg"></div></div>
+    <label class="fld"><span>Month look</span><select id="setLook">
+      <option value="planner">Planner — big icons, bold outlines, black day banner</option>
+      <option value="glass">Glass — compact and minimal</option></select></label>
+    <div class="grid2">
+      <label class="fld"><span>Theme</span><select id="setTheme"><option value="auto">Match system</option><option value="light">Light</option><option value="dark">Dark</option></select></label>
+      <label class="fld"><span>Week starts on</span><select id="setWeek"><option value="1">Monday</option><option value="0">Sunday</option><option value="6">Saturday</option></select></label>
+      <label class="fld"><span>Default calendar</span><select id="setCal"></select></label>
+      <label class="fld"><span>Default reminder</span><select id="setRem"><option value="">None</option><option value="5">5 min</option><option value="10">10 min</option><option value="15">15 min</option><option value="30">30 min</option><option value="60">1 hour</option></select></label>
+      <label class="fld"><span>Working hours from</span><input type="number" id="setWS" min="0" max="23"></label>
+      <label class="fld"><span>to</span><input type="number" id="setWE" min="1" max="24"></label>
+    </div>
+    <label class="toggle"><input type="checkbox" id="setH24"><i></i>24-hour time</label>
+    <label class="toggle"><input type="checkbox" id="setWk"><i></i>Show week numbers</label>
+    <label class="toggle"><input type="checkbox" id="setSmart"><i></i>Smart icons (🎂 birthdays, 🏏 cricket, ✈️ flights…)</label>
+    <div class="fld"><span>Your data</span>
+      <div class="btnrow">
+        <button type="button" class="btn ghost" id="bkExport" data-icon="download"><span>Back up (.json)</span></button>
+        <button type="button" class="btn ghost" id="bkImport" data-icon="upload"><span>Restore backup</span></button>
+        <button type="button" class="btn ghost" id="icsExportAll" data-icon="download"><span>Export all (.ics)</span></button>
+        <button type="button" class="btn ghost" id="setSync" data-icon="cloud"><span>Connect Gmail &amp; Outlook</span></button>
+        <button type="button" class="btn danger" id="clearAll" data-icon="trash"><span>Delete all events</span></button>
+      </div>
+      <p class="hint">Everything is saved in this Chrome profile on this computer. Back up now and then.</p>
+      <input type="file" id="bkFile" accept=".json,application/json" hidden>
+    </div>
+    <footer><span class="grow"></span><button type="submit" class="btn primary" data-icon="check"><span>Done</span></button></footer>
+  </form>
+</dialog>
+
+<!-- Live sync -->
+<dialog id="dlgSync" class="dlg glass">
+  <form method="dialog">
+    <h2><span data-icon="cloud"></span>Connect accounts<span class="grow"></span><button type="button" class="ib" data-close data-icon="x" title="Close"></button></h2>
+    <p class="hint">Sign in once and your Gmail / Outlook calendars stay in sync both ways — add, edit, drag or delete here and it updates there too.
+      Your sign-ins stay on this computer (in the <code>data</code> folder).</p>
+    <div id="syncBody"></div>
+  </form>
+</dialog>
+
+<!-- Shortcuts -->
+<dialog id="dlgKeys" class="dlg glass small">
+  <form method="dialog">
+    <h2><span data-icon="keyboard"></span>Keyboard shortcuts</h2>
+    <div class="keys">
+      <div><kbd>T</kbd> Today</div><div><kbd>N</kbd> New event</div>
+      <div><kbd>←</kbd> <kbd>→</kbd> Previous / next</div><div><kbd>C</kbd> New event</div>
+      <div><kbd>D</kbd> Day</div><div><kbd>/</kbd> Search</div>
+      <div><kbd>X</kbd> Work week</div><div><kbd>L</kbd> Light / dark</div>
+      <div><kbd>W</kbd> Week</div><div><kbd>Ctrl</kbd>+<kbd>Z</kbd> Undo</div>
+      <div><kbd>M</kbd> Month</div><div><kbd>Esc</kbd> Close</div>
+      <div><kbd>Y</kbd> Year</div><div><kbd>?</kbd> This help</div>
+      <div><kbd>A</kbd> Agenda</div><div><kbd>Backspace</kbd> Back to where you were</div>
+    </div>
+    <h3 class="sub">Mouse</h3>
+    <ul class="hint list">
+      <li><b>Click an event</b> to see its details, map and directions. <b>Right-click</b> (or double-click) it to edit. In the details card: <kbd>E</kbd> edit, <kbd>Del</kbd> delete.</li>
+      <li>Day/week views: <b>drag on empty space</b> to create, <b>drag an event</b> to move it, drag its bottom edge to resize.</li>
+      <li>Month view: <b>double-click a day</b> to create, <b>drag events</b> between days.</li>
+      <li>Click a date number to open that day.</li>
+    </ul>
+    <footer><span class="grow"></span><button class="btn primary">Got it</button></footer>
+  </form>
+</dialog>
+
+<script src="config.js"></script>
+<script src="app.js"></script>
+<script src="cloud.js"></script>
+<script src="sync.js"></script>
+</body>
+</html>
