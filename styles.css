@@ -455,7 +455,7 @@ kbd { display: inline-block; min-width: 22px; text-align: center; padding: 2px 6
 .planner .cell.o { background: var(--we-bg); }
 .planner .cell.o > * { opacity: .55; }
 .cell.blank { background: var(--off); }
-.planner .cell.blank { background: repeating-linear-gradient(135deg, transparent 0 10px, var(--we-bg) 10px 12px); }
+.planner .cell.blank { background: var(--we-bg); } /* one plain block, no stripes */
 .planner .cell.today { box-shadow: inset 0 0 0 3px var(--accent); border-radius: 0;
   background: linear-gradient(160deg, color-mix(in srgb, var(--accent) 42%, transparent), color-mix(in srgb, var(--accent) 26%, transparent)); }
 .planner .today .more-btn { background: #fff; }

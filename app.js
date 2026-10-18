@@ -506,9 +506,13 @@ function renderMonth() {
     const ws = addDays(gs, r * 7);
     h += `<div class="wk" title="Week ${isoWeek(ws)}">${isoWeek(addDays(ws, 3))}</div>`;
     for (let c = 0; c < 7; c++) {
+      // Days from the previous/next month are left out and run together as ONE plain block.
+      if (addDays(ws, c).getMonth() !== cur.getMonth()) {
+        let n = 1; while (c + n < 7 && addDays(ws, c + n).getMonth() !== cur.getMonth()) n++;
+        h += `<div class="cell blank" style="grid-column: span ${n}"></div>`;
+        c += n - 1; continue;
+      }
       const d = addDays(ws, c), k = ymd(d), list = byDay[k] || [];
-      // Days from the previous/next month stay empty, like a printed calendar.
-      if (d.getMonth() !== cur.getMonth()) { h += `<div class="cell blank ${[0, 6].includes(d.getDay()) ? 'we' : ''}"></div>`; continue; }
       const hol = list.find(o => o.ev.holiday);
       const label = d.getDate();
       const bdays = list.filter(isBirthday);
