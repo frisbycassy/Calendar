@@ -220,8 +220,8 @@ button { cursor: pointer; background: none; border: 0; padding: 0; }
 .month.nowk { grid-template-columns: 0 repeat(7, minmax(0,1fr)); }
 .month.nowk .wk { visibility: hidden; }
 .month .wd { font-size: 12px; color: var(--muted); padding: 11px 8px 0; font-weight: 600; }
-.month .wk { font-size: 10.5px; color: var(--faint); text-align: center; padding-top: 11px; border-top: 1px solid var(--line); }
-.cell { border-top: 1px solid var(--line); border-left: 1px solid var(--line); padding: 4px 5px; min-width: 0; display: flex; flex-direction: column; gap: 2px; overflow: hidden; position: relative; transition: background .15s; }
+.month .wk { font-size: 10.5px; color: var(--faint); text-align: center; padding-top: 11px; border-top: 0; }
+.cell { border: 0; padding: 4px 5px; min-width: 0; display: flex; flex-direction: column; gap: 2px; overflow: hidden; position: relative; transition: background .15s; }
 .cell.we { background: var(--off); }
 .cell.o { background: var(--off); }
 .cell.o .dnum { color: var(--faint); }
@@ -449,8 +449,8 @@ kbd { display: inline-block; min-width: 22px; text-align: center; padding: 2px 6
 [data-theme="dark"] .mtitle { text-shadow: 0 2px 12px color-mix(in srgb, var(--accent) 50%, transparent); }
 .month.planner { grid-template-rows: 40px repeat(var(--rows), minmax(0,1fr)); margin: 0 12px 12px; border: 2.5px solid var(--ink); border-radius: 16px; overflow: hidden; background: var(--paper); }
 .planner .wd, .planner .wdc { background: #17121f; color: #fff; font: 400 18px "Rye", Georgia, serif; text-transform: uppercase; letter-spacing: .07em; display: grid; place-items: center; padding: 0; }
-.planner .wk { border-top: 1.5px solid var(--grid); color: var(--muted); font-weight: 600; }
-.planner .cell { border-top: 1.5px solid var(--grid); border-left: 1.5px solid var(--grid); padding: 5px 6px; gap: 3px; }
+.planner .wk { border-top: 0; color: var(--muted); font-weight: 600; }
+.planner .cell { border: 0; padding: 5px 6px; gap: 3px; } /* no grid lines between the days */
 .planner .cell.we { background: var(--we-bg); }
 .planner .cell.o { background: var(--we-bg); }
 .planner .cell.o > * { opacity: .55; }
