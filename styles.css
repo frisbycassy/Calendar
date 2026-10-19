@@ -1,7 +1,7 @@
 /* ================= Tokens ================= */
 :root {
   --font: "Inter", "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif;
-  --text: #211b30; --muted: #6c6682; --faint: #9c97ad;
+  --text: #211b30; --muted: #6c6682; --faint: #7f7a92;
   --glass: rgba(255,255,255,.50); --glass-2: rgba(255,255,255,.70); --glass-3: rgba(255,255,255,.90);
   --edge: rgba(255,255,255,.78); --edge-2: rgba(255,255,255,.55);
   --line: rgba(45,20,80,.08); --line-2: rgba(45,20,80,.15);
@@ -491,9 +491,9 @@ kbd { display: inline-block; min-width: 22px; text-align: center; padding: 2px 6
 
 /* Days that have passed: faded (colours still show a little) so today and what's coming stand out.
    Hover a past day to see it clearly again. */
-.cell.past > * { opacity: .5; filter: grayscale(.35) blur(.3px); transition: opacity .2s, filter .2s; }
+.cell.past > * { opacity: .62; filter: grayscale(.3) blur(.25px); transition: opacity .2s, filter .2s; }
 .cell.past:hover > * { opacity: 1; filter: none; }
-.ev.past { opacity: .5; filter: grayscale(.35); transition: opacity .2s, filter .2s; }
+.ev.past { opacity: .62; filter: grayscale(.3); transition: opacity .2s, filter .2s; }
 .ev.past:hover { opacity: 1; filter: none; }
 
 /* Month entries are sized in "em" so the whole day box can shrink its text until everything fits (see fitMonth). */
@@ -694,3 +694,23 @@ kbd { display: inline-block; min-width: 22px; text-align: center; padding: 2px 6
 .cloud-login input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
 .cloud-login .cl-msg { color: #e03131; font-size: 13px; min-height: 1em; }
 .cloud-login .btn { justify-content: center; height: 44px; }
+
+/* ================= Dark-mode readability: "today" markers sit on bright colours, so they use dark text ================= */
+[data-theme="dark"] .today .dnum,
+[data-theme="dark"] .planner .today .dnum,
+[data-theme="dark"] .mini-g .d.td,
+[data-theme="dark"] .dh.today .dn,
+[data-theme="dark"] .ag-day.today .n,
+[data-theme="dark"] .ym-d.td { color: #17121f; }
+
+/* Past days: a gentler fade in light mode, where grey text has less room before it becomes hard to read */
+[data-theme="light"] .cell.past > *, [data-theme="light"] .ev.past { opacity: .78; }
+
+/* ================= Dark colour themes: each has its own night background and a soft highlight in its own colour ================= */
+[data-theme="dark"] { --accent-soft: color-mix(in srgb, var(--accent) 16%, transparent); }
+[data-theme="dark"][data-bg="ocean"]    { --base: linear-gradient(135deg, #06141d 0%, #0a2331 50%, #09122c 100%); }
+[data-theme="dark"][data-bg="aurora"]   { --base: linear-gradient(135deg, #06170e 0%, #130f2b 50%, #061a22 100%); }
+[data-theme="dark"][data-bg="sunset"]   { --base: linear-gradient(135deg, #1e0c07 0%, #2b0e1b 50%, #170c2b 100%); }
+[data-theme="dark"][data-bg="graphite"] { --base: linear-gradient(135deg, #111215 0%, #1b1d22 50%, #131519 100%); --accent: #74839a; --accent-2: #546073; }
+/* the soft-grey Graphite accent is mid-tone, so buttons on it keep white text readable */
+[data-bg="graphite"] .btn.primary { background: linear-gradient(135deg, var(--accent), var(--accent-2)); }
