@@ -806,4 +806,4 @@ kbd { display: inline-block; min-width: 22px; text-align: center; padding: 2px 6
 .ppl-tag .i { width: 12px; height: 12px; }
 
 /* icon sits inline between the time and the event name */
-.chip .st-tx > .ic, .chip > .t + .ic { display: inline-block; vertical-align: -.1em; margin: 0 .2em; flex-shrink: 0; }
+.chip .st-tx > .ic, .chip > .t + .ic { display: inline-block; vertical-align: -.1em; margin: 0 0 0 .2em; flex-shrink: 0; }

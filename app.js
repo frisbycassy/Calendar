@@ -408,7 +408,7 @@ function sticker(o, day) {
   }
   const time = sameDayStr(o.start, day) ? `${fmtTime(o.start)} - ${fmtTime(o.end)}` : `until ${fmtTime(o.end)}`;
   // The tick box is part of the (never-wrapping) time, so it always sits between the time and the name.
-  return `<div class="chip st ${state}" ${common}><span class="st-tx"><span class="t">${time}:${taskBox(o)}</span> ${ic ? `<span class="ic">${ic}</span> ` : ''}<span class="ti">${esc(o.ev.title)}</span>${pplIcon(o)}</span></div>`;
+  return `<div class="chip st ${state}" ${common}><span class="st-tx"><span class="t">${time}:${taskBox(o)}</span> ${ic ? `<span class="ic">${ic}</span>` : ''}<span class="ti">${esc(o.ev.title)}</span>${pplIcon(o)}</span></div>`;
 }
 const plannerLook = () => S.settings.look === 'planner';
 /* Birthdays: from a calendar called "Birthdays…" or with "birthday" in the title. Month view shows them as a 🧁. */
