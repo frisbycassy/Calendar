@@ -389,7 +389,7 @@ function chip(o, day) {
   const ic = eventIcon(o.ev, o.cal);
   const showTime = !o.ev.allDay && (!day || sameDayStr(o.start, day));
   return `<div class="chip ${o.ev.allDay || multiDay(o) ? 'allday' : ''} ${isDone(o) ? 'done' : ''} ${o.ro ? 'ro' : ''}" style="--c:${o.cal.color}" data-key="${esc(o.key)}" draggable="${!o.ro}" title="${esc(o.ev.title)}">
-    ${ic ? `<span class="ic">${ic}</span>` : ''}${showTime ? `<span class="t">${fmtTime(o.start)}</span>` : ''}<span class="ti">${esc(o.ev.title)}</span>${taskBox(o)}${pplIcon(o)}${isRecurring(o.ev) ? svg('repeat', 'rp') : ''}</div>`;
+    ${ic ? `<span class="ic">${ic}</span>` : ''}${showTime ? `<span class="t">${fmtTime(o.start)}:</span>` : ''}<span class="ti">${esc(o.ev.title)}</span>${taskBox(o)}${pplIcon(o)}${isRecurring(o.ev) ? svg('repeat', 'rp') : ''}</div>`;
 }
 const sameDayStr = (d, k) => ymd(d) === k;
 /* Small 'people' icon on events that have guests. */
@@ -407,7 +407,7 @@ function sticker(o, day) {
   }
   const time = sameDayStr(o.start, day) ? `${fmtTime(o.start)} - ${fmtTime(o.end)}` : `until ${fmtTime(o.end)}`;
   // The tick box is part of the (never-wrapping) time, so it always sits between the time and the name.
-  return `<div class="chip st ${state}" ${common}>${ic ? `<span class="ic">${ic}</span>` : ''}<span class="st-tx"><span class="t">${time}${taskBox(o)}</span> <span class="ti">${esc(o.ev.title)}</span>${pplIcon(o)}</span></div>`;
+  return `<div class="chip st ${state}" ${common}>${ic ? `<span class="ic">${ic}</span>` : ''}<span class="st-tx"><span class="t">${time}:${taskBox(o)}</span> <span class="ti">${esc(o.ev.title)}</span>${pplIcon(o)}</span></div>`;
 }
 const plannerLook = () => S.settings.look === 'planner';
 /* Birthdays: from a calendar called "Birthdays…" or with "birthday" in the title. Month view shows them as a 🧁. */
