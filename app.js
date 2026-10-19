@@ -743,9 +743,10 @@ function moveOcc(o, ns, ne) {
 function renderYear() {
   const y = cur.getFullYear();
   const occ = getOcc(new Date(y, 0, 1), new Date(y + 1, 0, 1));
-  const count = {}, hol = {};
+  const count = {}, hol = {}, off = {};
   for (const o of occ) {
-    if (o.ev.holiday) { hol[ymd(o.start)] = o.ev.title; continue; }
+    // holiday labels (public holidays, School Holiday) mark the day but don't count as events; real days off also get the weekend shading
+    if (isHoliday(o)) { hol[ymd(o.start)] = o.ev.title; if (isDayOff(o)) off[ymd(o.start)] = true; continue; }
     let d = startOfDay(o.start);
     do { count[ymd(d)] = (count[ymd(d)] || 0) + 1; d = addDays(d, 1); } while (d < o.end);
   }
@@ -755,14 +756,15 @@ function renderYear() {
     const first = new Date(y, m, 1), gs = startOfWeek(first), dim = new Date(y, m + 1, 0).getDate();
     h += `<div class="ym ${m === new Date().getMonth() && y === new Date().getFullYear() ? 'curm' : ''}"><h3><button data-month="${m}">${fmt(first, { month: 'long' })}</button></h3><div class="ym-g">`;
     for (let i = 0; i < 7; i++) h += `<div class="h">${fmt(addDays(gs, i), { weekday: 'narrow' })}</div>`;
-    const lead = dayDiff(first, gs);
-    for (let i = 0; i < lead; i++) h += '<div></div>';
+    const lead = dayDiff(first, gs), trail = (7 - ((lead + dim) % 7)) % 7;
+    if (lead) h += `<div class="ym-blank" style="grid-column: span ${lead}"></div>`; // days of the previous month run together as one block
     for (let d = 1; d <= dim; d++) {
-      const k = ymd(new Date(y, m, d)), c = count[k] || 0;
+      const dt = new Date(y, m, d), k = ymd(dt), c = count[k] || 0;
       const lvl = c >= 5 ? 'l3' : c >= 3 ? 'l2' : c >= 1 ? 'l1' : '';
       const tip = [hol[k], c ? `${c} event${c > 1 ? 's' : ''}` : ''].filter(Boolean).join(' · ');
-      h += `<button class="ym-d ${lvl} ${k === today ? 'td' : ''} ${hol[k] ? 'hd' : ''}" data-goto="${k}" title="${esc(tip)}">${d}</button>`;
+      h += `<button class="ym-d ${lvl} ${k === today ? 'td' : ''} ${k < today ? 'past' : ''} ${hol[k] ? 'hd' : ''} ${[0, 6].includes(dt.getDay()) || off[k] ? 'we' : ''}" data-goto="${k}" title="${esc(tip)}">${d}</button>`;
     }
+    if (trail) h += `<div class="ym-blank" style="grid-column: span ${trail}"></div>`; // … and so do the days of the next month
     h += '</div></div>';
   }
   return h + '</div>';

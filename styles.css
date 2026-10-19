@@ -758,3 +758,27 @@ kbd { display: inline-block; min-width: 22px; text-align: center; padding: 2px 6
 .planner.cols1 .today .dnum { width: 40px; height: 40px; min-width: 40px; font-size: 20px; }
 .cols1 .cl { gap: 8px; }
 .cols1 .hol-lbl { font-size: 16px; }
+
+/* ================= Year view: every month looks like the month view ================= */
+[data-look="planner"] .year { gap: 18px; padding: 14px 16px 18px; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); }
+[data-look="planner"] .ym { padding: 0; border: 2.5px solid var(--ink); border-radius: 14px; overflow: hidden; background: var(--paper); }
+[data-look="planner"] .ym.curm { box-shadow: 0 0 0 3px var(--accent-soft); }
+[data-look="planner"] .ym h3 { margin: 0; padding: 8px 0 6px; text-align: center; font: 400 19px/1.1 "Macondo", cursive; text-transform: uppercase; letter-spacing: .12em; color: var(--ink); }
+[data-look="planner"] .ym h3 button { color: inherit; }
+[data-look="planner"] .ym-g { gap: 0; }
+[data-look="planner"] .ym-g .h { background: #17121f; color: #fff; font: 400 11px "Rye", Georgia, serif; padding: 5px 0 4px; letter-spacing: .04em; }
+[data-look="planner"] .ym-d { position: relative; height: 31px; border-radius: 0; font: 400 12.5px "Rye", Georgia, serif; color: var(--muted);
+  box-shadow: inset 1px 1px 0 var(--grid); }
+[data-look="planner"] .ym-d.we { background: var(--we-bg); }
+[data-look="planner"] .ym-d.l1 { background: color-mix(in srgb, var(--accent) 14%, transparent); color: var(--ink); }
+[data-look="planner"] .ym-d.l2 { background: color-mix(in srgb, var(--accent) 28%, transparent); color: var(--ink); }
+[data-look="planner"] .ym-d.l3 { background: color-mix(in srgb, var(--accent) 44%, transparent); color: var(--ink); font-weight: 400; }
+[data-look="planner"] .ym-d.hd { color: #e03131; font-weight: 400; }
+[data-look="planner"] .ym-d.td { background: linear-gradient(160deg, color-mix(in srgb, var(--accent) 60%, transparent), color-mix(in srgb, var(--accent) 38%, transparent)); box-shadow: inset 0 0 0 2.5px var(--accent); color: var(--ink); font-weight: 400; }
+[data-look="planner"] .ym-d:hover { outline: 0; box-shadow: inset 0 0 0 2px var(--accent); }
+/* past days: the same corner-to-corner line as the month view */
+[data-look="planner"] .ym-d.past::after { content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(to bottom right, transparent calc(50% - .7px), color-mix(in srgb, var(--text) 50%, transparent) calc(50% - .7px) calc(50% + .7px), transparent calc(50% + .7px)); }
+.ym-blank { background: var(--we-bg); box-shadow: inset 1px 1px 0 var(--grid); }
+
+.ym-blank { background: var(--we-bg, var(--off)); }
