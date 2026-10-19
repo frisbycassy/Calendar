@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Macondo&family=Rye&family=Patrick+Hand&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=20261019105032">
+<link rel="stylesheet" href="styles.css?v=20261019105513">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-192.png">
 <meta name="theme-color" content="#ffc4dd">
@@ -94,9 +94,9 @@
     <div class="rows">
       <div class="row"><span data-icon="calendar"></span><select id="evCal"></select></div>
       <div class="row wrap"><span data-icon="clock"></span>
-        <input type="date" id="evSD"><input type="text" id="evST" class="t12" list="times12" placeholder="9:00am" autocomplete="off" spellcheck="false">
+        <input type="text" id="evSD" class="dfmt" placeholder="19 Oct 2026" autocomplete="off" spellcheck="false"><input type="text" id="evST" class="t12" list="times12" placeholder="9:00am" autocomplete="off" spellcheck="false">
         <span class="to">to</span>
-        <input type="date" id="evED"><input type="text" id="evET" class="t12" list="times12" placeholder="10:00am" autocomplete="off" spellcheck="false">
+        <input type="text" id="evED" class="dfmt" placeholder="19 Oct 2026" autocomplete="off" spellcheck="false"><input type="text" id="evET" class="t12" list="times12" placeholder="10:00am" autocomplete="off" spellcheck="false">
         <datalist id="times12"></datalist>
         <label class="toggle"><input type="checkbox" id="evAll"><i></i>All day</label>
       </div>
@@ -111,7 +111,7 @@
           <option value="yearly">Every year</option>
         </select>
         <div class="daychips" id="evDays"></div>
-        <label class="until" id="untilWrap">until <input type="date" id="evUntil"></label>
+        <label class="until" id="untilWrap">until <input type="text" id="evUntil" class="dfmt" placeholder="no end date" autocomplete="off" spellcheck="false"></label>
       </div>
       <div class="row"><span data-icon="bell"></span>
         <select id="evRem">
@@ -269,9 +269,9 @@
   </form>
 </dialog>
 
-<script src="config.js?v=20261019105032"></script>
-<script src="app.js?v=20261019105032"></script>
-<script src="cloud.js?v=20261019105032"></script>
-<script src="sync.js?v=20261019105032"></script>
+<script src="config.js?v=20261019105513"></script>
+<script src="app.js?v=20261019105513"></script>
+<script src="cloud.js?v=20261019105513"></script>
+<script src="sync.js?v=20261019105513"></script>
 </body>
 </html>

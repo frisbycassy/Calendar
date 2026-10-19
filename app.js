@@ -1667,9 +1667,48 @@ function initTimeBoxes() {
   $('#times12').innerHTML = [...Array(48)].map((_, i) => `<option value="${showTime(`${pad(Math.floor(i / 2))}:${i % 2 ? '30' : '00'}`)}">`).join('');
 }
 
+/* Date boxes in the event editor: show dates as "19 Oct 2026" whatever the computer's regional settings are.
+   Each box still hands the rest of the app a plain "YYYY-MM-DD" value. Accepts 19 Oct 2026, 19/10/2026,
+   2026-10-19, "19 oct", "oct 19", today, tomorrow. A small calendar button opens a picker. */
+const MON3 = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+function parseDateText(s, fallbackYear) {
+  s = String(s || '').trim().toLowerCase().replace(/,/g, '');
+  if (s === 'today') return ymd(new Date());
+  if (s === 'tomorrow') return ymd(addDays(new Date(), 1));
+  let y, m, d, x;
+  const yr = v => (v == null || v === '' ? fallbackYear : (+v < 100 ? 2000 + +v : +v));
+  if ((x = s.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})$/))) { y = +x[1]; m = +x[2]; d = +x[3]; }
+  else if ((x = s.match(/^(\d{1,2})[-/.\s](\d{1,2})[-/.\s](\d{2,4})$/))) { d = +x[1]; m = +x[2]; y = yr(x[3]); }
+  else if ((x = s.match(/^(\d{1,2})(?:st|nd|rd|th)?\s*([a-z]{3,})\.?(?:\s+(\d{2,4}))?$/))) { d = +x[1]; m = MON3.findIndex(n => n.toLowerCase() === x[2].slice(0, 3)) + 1; y = yr(x[3]); }
+  else if ((x = s.match(/^([a-z]{3,})\.?\s+(\d{1,2})(?:st|nd|rd|th)?(?:\s+(\d{2,4}))?$/))) { m = MON3.findIndex(n => n.toLowerCase() === x[1].slice(0, 3)) + 1; d = +x[2]; y = yr(x[3]); }
+  else return null;
+  if (!m || m < 1 || m > 12 || d < 1 || d > 31) return null;
+  const t = new Date(y, m - 1, d);
+  return t.getFullYear() === y && t.getMonth() === m - 1 && t.getDate() === d ? ymd(t) : null;
+}
+const showDate = v => { if (!v) return ''; const [y, m, d] = v.split('-').map(Number); return `${d} ${MON3[m - 1]} ${y}`; };
+function initDateBoxes() {
+  const proto = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value');
+  $$('.dfmt').forEach(el => {
+    let v = '';
+    Object.defineProperty(el, 'value', {
+      get() { const raw = proto.get.call(el); const p = parseDateText(raw, v ? +v.slice(0, 4) : new Date().getFullYear()); if (p) v = p; else if (!raw.trim()) v = ''; return v; }, // reads what you typed, even before you leave the box
+      set(x) { v = x || ''; proto.set.call(el, showDate(v)); },
+    });
+    el.addEventListener('change', () => { el.value = el.value; }); // tidy it into "19 Oct 2026" (or restore the old date if it wasn't a date)
+    // small calendar button -> the browser's own date picker
+    const pk = document.createElement('input'); pk.type = 'date'; pk.tabIndex = -1; pk.className = 'pk-hidden';
+    const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'datepick'; btn.title = 'Pick a date'; btn.innerHTML = svg('calendar');
+    btn.onclick = () => { pk.value = el.value || ymd(new Date()); try { pk.showPicker(); } catch { pk.focus(); pk.click(); } };
+    pk.onchange = () => { if (pk.value) { el.value = pk.value; el.dispatchEvent(new Event('change', { bubbles: true })); } };
+    el.after(btn, pk);
+  });
+}
+
 function wire() {
   hydrateIcons();
   initTimeBoxes();
+  initDateBoxes();
   $('#todayBtn').onclick = goToday;
   $('#backBtn').onclick = goBack;
   $('#newBtn').onclick = () => newOnDay(ymd(cur));

@@ -724,3 +724,14 @@ kbd { display: inline-block; min-width: 22px; text-align: center; padding: 2px 6
 .crow i { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
 .crow .cn { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .crow small { color: var(--muted); white-space: nowrap; }
+
+/* Date boxes in the event editor ("19 Oct 2026") */
+.row input.dfmt { width: 118px; text-align: center; }
+.datepick { width: 30px; height: 36px; display: inline-grid; place-items: center; color: var(--muted); border-radius: 9px; margin-left: -4px; }
+.datepick:hover { background: var(--hover); color: var(--accent); }
+.datepick .i { width: 16px; height: 16px; }
+.pk-hidden { position: absolute; width: 0; height: 0; opacity: 0; pointer-events: none; border: 0; padding: 0; }
+.until .dfmt { width: 112px; }
+
+/* Finished tasks: the time gets the same line through it as the name (the tick circle itself is left alone) */
+.chip.done .t, .chip.done .st-tx, .ev.done .ev-m, .ag-item.done .ag-time, .un .done .tx small { text-decoration: line-through; text-decoration-thickness: 1.5px; }
