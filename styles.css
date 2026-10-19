@@ -748,3 +748,13 @@ kbd { display: inline-block; min-width: 22px; text-align: center; padding: 2px 6
 .planner.weekcols .dnum { font-size: 18px; }
 .planner.weekcols .today .dnum { width: 28px; height: 28px; min-width: 28px; font-size: 14px; }
 .weekcols .ch { min-height: 30px; }
+
+/* Day view: one big month-style box */
+.month.cols1 { grid-template-columns: 30px minmax(0, 1fr); }
+.month.cols1.nowk { grid-template-columns: 0 minmax(0, 1fr); }
+.cols1 .cell { padding: 10px 16px; gap: 6px; }
+.cols1 .dnum { font-size: 26px; }
+.planner.cols1 .dnum { font-size: 28px; }
+.planner.cols1 .today .dnum { width: 40px; height: 40px; min-width: 40px; font-size: 20px; }
+.cols1 .cl { gap: 8px; }
+.cols1 .hol-lbl { font-size: 16px; }

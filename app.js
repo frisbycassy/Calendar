@@ -475,14 +475,13 @@ function render() {
   if (view === 'month') html = renderMonth();
   else if (view === 'year') html = renderYear();
   else if (view === 'agenda') html = renderAgenda();
-  else if (view === 'week' || view === 'workweek') html = renderWeekCols();
+  else if (view === 'week' || view === 'workweek' || view === 'day') html = renderWeekCols(); // day = one big box
   else html = renderGrid();
   // Big title with the previous / next arrows either side, at the top of every view.
   const head = `<div class="vhead"><button class="nav-arrow" data-nav="-1" title="Previous (←)">${svg('chevronLeft')}</button>`
     + `<h2 class="mtitle">${esc(titleText())}</h2><button class="nav-arrow" data-nav="1" title="Next (→)">${svg('chevronRight')}</button></div>`;
   v.innerHTML = head + banner + html;
-  if (view === 'month' || view === 'week' || view === 'workweek') fitMonth();
-  if (view === 'day') bindGrid();
+  if (view === 'month' || view === 'week' || view === 'workweek' || view === 'day') fitMonth();
   renderSidebar();
   renderUpNext();
   updateBrand();
@@ -561,7 +560,7 @@ function fitMonth() {
     cl.style.cssText = 'display:flex;flex-direction:column;min-height:0;flex:1;overflow:hidden';
     if (plannerLook()) {
       // Planner look: shrink the text until every event fits in the day box.
-      let fs = cell.closest('.weekcols') ? 15 : 13; // week boxes are taller, so start with larger text
+      let fs = cell.closest('.cols1') ? 19 : cell.closest('.weekcols') ? 15 : 13; // the day box is the biggest, then week boxes
       cl.style.fontSize = fs + 'px';
       const overflows = () => cl.scrollHeight > cl.clientHeight + 1 || cl.scrollWidth > cl.clientWidth + 1;
       while (overflows() && fs > 7) { fs -= 0.5; cl.style.fontSize = fs + 'px'; }
