@@ -205,7 +205,7 @@ const Sync = (() => {
       if ((g.ignored || []).includes(rc.remoteId)) continue;
       let cal = S.cals.find(c => c.source?.account === acc.id && c.source.remoteId === rc.remoteId);
       if (!cal) {
-        cal = { id: 'c-' + uid(), name: rc.name, color: rc.color, icon: rc.primary ? '📅' : '', groupId: g.id, visible: rc.visible,
+        cal = { id: 'c-' + uid(), name: rc.name, color: rc.color, icon: rc.primary ? '📅' : '', groupId: g.id, visible: rc.readonly ? rc.visible : true, // your own calendars always arrive switched on
           readonly: rc.readonly, source: { type: acc.provider, account: acc.id, remoteId: rc.remoteId } };
         S.cals.push(cal);
       }
@@ -257,6 +257,12 @@ const Sync = (() => {
       try { await syncCal(cal); } catch (e) { cal.source.error = e.message; errors.push(`${cal.name}: ${e.message}`); }
     }
     busy = false; if (!pending) spin(false); lastRun = Date.now();
+    // First time Google is connected: clear out the starter calendars right away (a backup is kept; Restore is offered).
+    const removed = removeSamples();
+    if (removed != null) {
+      toast(`Removed the starter calendars (${removed} sample events). Your Google calendars are untouched.`, { icon: 'trash', ms: 12000,
+        action: ['Restore', () => { try { Object.assign(S, JSON.parse(localStorage.getItem('glasscal.backup-before-removing-samples'))); S.settings.samplesRemoved = true; save(); render(); } catch { toast('Could not find the backup', { icon: 'alert' }); } }] });
+    }
     save(); render();
     if ($('#dlgSync').open) drawDialog();
     if (errors.length) toast(`Sync problem — ${errors[0]}`, { icon: 'alert', ms: 9000 });
@@ -465,7 +471,13 @@ const Sync = (() => {
       const err = cals.find(c => c.source.error)?.source.error;
       return `<div class="acct"><div><b>${esc(a.email)}</b><small>${cals.length} calendar${cals.length === 1 ? '' : 's'} · synced ${ago(isFinite(last) ? last : 0)}</small>${err ? `<small class="err">${svg('alert')}${esc(err)}</small>` : ''}</div>
         ${err ? `<button type="button" class="btn ghost" data-sync="connect" data-p="${provider}">${svg('refresh')}<span>Reconnect</span></button>` : ''}
-        <button type="button" class="btn ghost" data-sync="disconnect" data-id="${esc(a.id)}">Disconnect</button></div>`;
+        <button type="button" class="btn ghost" data-sync="disconnect" data-id="${esc(a.id)}">Disconnect</button></div>
+      <div class="calrows">${cals.map(c => {
+        const n = S.events.filter(e => e.calId === c.id).length;
+        return `<div class="crow"><i style="background:${c.color}"></i><span class="cn">${c.icon || ''} ${esc(c.name)}</span>
+          <small>${c.source.error ? `<b class="err">${esc(c.source.error)}</b>` : `${n} event${n === 1 ? '' : 's'} loaded`}</small>
+          <button type="button" class="btn ghost sm" data-sync="toggle" data-id="${c.id}">${c.visible ? 'Showing' : 'Hidden · show it'}</button></div>`;
+      }).join('')}</div>`;
     }).join('');
   }
   function providerCard(p) {
@@ -550,6 +562,10 @@ const Sync = (() => {
       if (!url) return toast('Paste a calendar link first', { icon: 'link' });
       b.disabled = true; await addFeed(url, $('#feedName').value.trim()); b.disabled = false;
       return;
+    }
+    if (act === 'toggle') {
+      const c = calById(b.dataset.id); c.visible = !c.visible;
+      save(); render(); drawDialog(); return;
     }
     if (act === 'unfeed') {
       const c = calById(b.dataset.id);

@@ -208,7 +208,8 @@ if (!S.settings.oneGroup) {
 }
 // 5) Once Google is connected, remove the sample calendars from the first version (a backup is kept first).
 const SAMPLE_CALS = ['c-main', 'c-aupair', 'c-kumon', 'c-bday', 'c-todo'];
-if (!S.settings.samplesRemoved && (S.cals || []).some(c => c.source?.type === 'google') && S.cals.some(c => SAMPLE_CALS.includes(c.id))) {
+function removeSamples() {
+  if (S.settings.samplesRemoved || !(S.cals || []).some(c => c.source?.type === 'google') || !S.cals.some(c => SAMPLE_CALS.includes(c.id))) return null;
   try { localStorage.setItem('glasscal.backup-before-removing-samples', JSON.stringify(S)); } catch { }
   const n = S.events.filter(e => SAMPLE_CALS.includes(e.calId)).length;
   S.cals = S.cals.filter(c => !SAMPLE_CALS.includes(c.id));
@@ -217,8 +218,9 @@ if (!S.settings.samplesRemoved && (S.cals || []).some(c => c.source?.type === 'g
   const primary = S.cals.find(c => c.source?.type === 'google' && /@/.test(c.source.remoteId) && !c.readonly) || S.cals.find(c => c.source?.type === 'google' && !c.readonly);
   if (primary) S.settings.defaultCal = primary.id;
   S.settings.samplesRemoved = true;
-  window.__samplesRemovedNote = n;
+  return n;
 }
+{ const n = removeSamples(); if (n != null) window.__samplesRemovedNote = n; }
 // 8) SOM & POM and 100 Club are monthly all-day tasks (tick circle).
 if (!S.settings.monthlyTasks) {
   (S.events || []).forEach(e => { if (/^(som\s*&\s*pom|100 club)$/i.test((e.title || '').trim())) e.task = true; });
