@@ -959,7 +959,7 @@ function repeatText(ev) {
 }
 function whenBadge(o) {
   const now = new Date();
-  if (o.start <= now && o.end > now) return ['Happening now', 'now'];
+  if (o.start <= now && o.end > now) return ['Happening now', 'live'];
   if (o.end <= now) return ['Ended', 'past'];
   const d = dayDiff(o.start, now);
   if (d === 0) { const m = Math.round((o.start - now) / 6e4); return [m < 60 ? `Starts in ${m} min` : `Today, in ${durText(o.start - now)}`, 'soon']; }
@@ -1039,7 +1039,7 @@ function openPeek(o, anchor) {
       <div class="pk-row">${svg('clock')}<div class="pk-main"><b>${dateLine}</b><span>${timeLine}</span><em class="when ${whenCls}">${when}</em></div></div>
       ${isRecurring(ev) ? `<div class="pk-row">${svg('repeat')}<div class="pk-main"><span>${repeatText(ev)}</span></div></div>`
         : ev.remote?.series ? `<div class="pk-row">${svg('repeat')}<div class="pk-main"><span>Part of a repeating event</span></div></div>` : ''}
-      ${ev.reminder != null ? `<div class="pk-row">${svg('bell')}<div class="pk-main"><span>Reminder ${remText(ev.reminder).toLowerCase()}</span></div></div>` : ''}
+      ${ev.reminder != null && !ev.allDay ? `<div class="pk-row">${svg('bell')}<div class="pk-main"><span>Reminder ${remText(ev.reminder).toLowerCase()}</span></div></div>` : ''}
       ${locBlock}
       ${peopleBlock(ev)}
       ${ev.notes ? `<div class="pk-row">${svg('note')}<div class="pk-main pk-notes">${linkify(ev.notes)}</div></div>` : ''}
@@ -1461,7 +1461,7 @@ function checkReminders() {
   const now = new Date();
   for (const o of getOcc(addMin(now, -60), addDays(now, 8), { all: true })) {
     const r = o.ev.reminder;
-    if (r == null || o.ro) continue;
+    if (r == null || o.ro || o.ev.allDay) continue;
     const at = o.start - r * 6e4;
     if (now < at || now - at > 60 * 6e4 || now > o.end) continue;
     const k = `${o.key}|${r}`;
