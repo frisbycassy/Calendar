@@ -186,7 +186,7 @@ function seed() {
   return {
     groups: [{ id: g1, name: 'All calendars' }],
     cals, events,
-    settings: { weekStart: 1, theme: 'auto', bg: 'blossom', look: 'planner', h24: false, time12: true, oneGroup: true, lolly: true, readTueFri: true, weekNums: true, smartIcons: true, defaultReminder: 15, defaultCal: 'c-main', workStart: 8, workEnd: 17, view: 'month' },
+    settings: { weekStart: 1, theme: 'dark', bg: 'blossom', look: 'planner', nightDefault: true, h24: false, time12: true, oneGroup: true, lolly: true, readTueFri: true, weekNums: true, smartIcons: true, defaultReminder: 15, defaultCal: 'c-main', workStart: 8, workEnd: 17, view: 'month' },
   };
 }
 function load() {
@@ -243,6 +243,8 @@ if (!S.settings.readTueFri) {
 if (!S.settings.lolly) { S.cals.forEach(c => { if (/^au ?pair$/i.test(c.name.trim()) && c.icon === '🧒') c.icon = '🍭'; }); S.settings.lolly = true; }
 // 2) 2:00pm-style times (Settings can turn 24-hour back on afterwards).
 if (!S.settings.time12) { S.settings.h24 = false; S.settings.time12 = true; }
+// 10) The default look is Blossom in night mode (set once for every device; you can still change it in Settings and it stays).
+if (!S.settings.nightDefault) { S.settings.theme = 'dark'; S.settings.bg = 'blossom'; }
 S.settings = { ...seed().settings, ...S.settings };
 save();
 function save() {
