@@ -393,6 +393,7 @@ function chip(o, day) {
 }
 const sameDayStr = (d, k) => ymd(d) === k;
 /* Small 'people' icon on events that have guests. */
+const pplTag = ev => { const n = ev.attendees?.length || 0; return n ? `<span class="ppl-tag">${svg('users')}${n} ${n === 1 ? 'person' : 'people'}</span>` : ''; };
 const pplIcon = o => o.ev.attendees?.length ? `<span class="ppl-ic" title="${o.ev.attendees.length} ${o.ev.attendees.length === 1 ? 'person' : 'people'}">${svg('users')}</span>` : '';
 /* Compact time for planner stickers: "10am", "4:30pm" (or 24-hour). */
 const tShort = d => S.settings.h24 ? hm(d) : `${d.getHours() % 12 || 12}${d.getMinutes() ? ':' + pad(d.getMinutes()) : ''}${d.getHours() < 12 ? 'am' : 'pm'}`;
@@ -793,7 +794,7 @@ function renderAgenda() {
       const time = o.ev.allDay ? 'All day' : multiDay(o) ? `${fmtTime(o.start)}<small>→ ${fmt(o.end, { day: 'numeric', month: 'short' })}</small>` : `${fmtTime(o.start)}<small>${fmtTime(o.end)}</small>`;
       h += `<button class="ag-item ${isDone(o) ? 'done' : ''}" data-key="${esc(o.key)}" style="--c:${o.cal.color}">
         <span class="ag-time">${time}</span><span class="bar"></span><span class="em">${eventIcon(o.ev, o.cal) || svg('calendar')}</span>
-        <span class="ag-main"><b>${taskBox(o)} ${esc(o.ev.title)}</b><small>${o.cal.icon || ''} ${esc(o.cal.name)}${o.ev.location ? ` · ${svg('pin')}${esc(o.ev.location)}` : ''}</small></span>
+        <span class="ag-main"><b>${taskBox(o)} ${esc(o.ev.title)}</b><small>${o.cal.icon || ''} ${esc(o.cal.name)}${o.ev.location ? ` · ${svg('pin')}${esc(o.ev.location)}` : ''}${pplTag(o.ev)}</small></span>
         ${isRecurring(o.ev) ? svg('repeat') : '<span></span>'}</button>`;
     }
     h += '</div></section>';
@@ -864,7 +865,7 @@ function renderUpNext() {
     return `Missed · ${day}${isAllDayish(o) ? '' : ', ' + fmtTime(o.start)}`;
   };
   const item = (o, sub, cls = '') => `<button class="un ${cls}" data-key="${esc(o.key)}" style="--c:${o.cal.color}" title="${esc(o.ev.title)}">
-    <span class="em">${eventIcon(o.ev, o.cal) || '📅'}</span><span class="tx"><b>${esc(o.ev.title)}</b>${sub ? `<small>${sub}</small>` : ''}</span>${o.ev.task && !o.ro ? taskBox(o) : ''}</button>`;
+    <span class="em">${eventIcon(o.ev, o.cal) || '📅'}</span><span class="tx"><b>${esc(o.ev.title)}</b>${sub || o.ev.attendees?.length ? `<small>${sub || ''}${pplTag(o.ev)}</small>` : ''}</span>${o.ev.task && !o.ro ? taskBox(o) : ''}</button>`;
   const section = (label, arr, fn, cls, max) => !arr.length ? '' :
     `<div class="un-sec ${cls}">${label}</div>` + arr.slice(0, max).map(o => item(o, fn(o), cls)).join('')
     + (arr.length > max ? `<div class="un-more">+${arr.length - max} more</div>` : '');
@@ -920,7 +921,7 @@ function showDayPop(k, anchor, onlyBirthdays) {
     : fmt(d, { weekday: 'long', day: 'numeric', month: 'long' });
   const rows = onlyBirthdays
     ? list.map(o => `<button class="bday-row" data-key="${esc(o.key)}" style="--c:${o.cal.color}"><span class="bd-ic">${o.ev.icon || '🎂'}</span>
-        <span><b>${esc(o.ev.title.replace(/['\u2019]?s?\s*(birthday|b-?day)\s*$/i, '').trim() || o.ev.title)}</b><small>${esc(o.ev.title)}</small></span></button>`).join('')
+        <span><b>${esc(o.ev.title.replace(/['\u2019]?s?\s*(birthday|b-?day)\s*$/i, '').trim() || o.ev.title)}</b><small>${esc(o.ev.title)}${pplTag(o.ev)}</small></span></button>`).join('')
     : list.map(o => chip(o, k)).join('');
   pop.innerHTML = `<h4><span>${head}</span><button class="ib sm" data-act="closePop">${svg('x')}</button></h4>${rows}`;
   pop.hidden = false;
