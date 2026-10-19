@@ -786,3 +786,17 @@ kbd { display: inline-block; min-width: 22px; text-align: center; padding: 2px 6
 /* Year view: holiday dates (public holidays, South African holidays, School Holiday) are pink, not red */
 .ym-d.hd, [data-look="planner"] .ym-d.hd { color: #d9306f; font-weight: 400; }
 [data-theme="dark"] .ym-d.hd, [data-theme="dark"][data-look="planner"] .ym-d.hd { color: #ff7aa8; }
+
+/* ================= Birthday cupcake: right next to the date number, the same size as the number ================= */
+.cell { --dn: 12px; }
+.planner .cell { --dn: 14px; }
+.weekcols .cell { --dn: 16px; }
+.planner.weekcols .cell { --dn: 18px; }
+.cols1 .cell { --dn: 26px; }
+.planner.cols1 .cell { --dn: 28px; }
+.cell .ch .bday-btn { position: relative; right: auto; bottom: auto; z-index: 1; flex-shrink: 0; font-size: var(--dn); line-height: 1; padding: 0 1px; margin: 0 1px; filter: none; }
+.cell.has-cake .cl { padding-bottom: 0; }
+.cell .ch .bday-btn b { min-width: calc(var(--dn) * .72); height: calc(var(--dn) * .72); font-size: calc(var(--dn) * .52); line-height: calc(var(--dn) * .72); padding: 0 1px; border-radius: 999px; }
+/* year view: a small cupcake after the date number */
+.ym-d { display: flex; align-items: center; justify-content: center; gap: 1px; }
+.ym-cake { font-size: 11px; line-height: 1; }

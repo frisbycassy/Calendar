@@ -531,9 +531,9 @@ function dayCell(d, list, today, draw) {
   const holLbl = hols.map(o => `<button class="hol-lbl" data-key="${esc(o.key)}" style="--c:${isSchoolHoliday(o) ? HOLIDAY_GREY : o.cal.color}" title="${esc(o.ev.title)}">${esc(o.ev.title)}</button>`).join('');
   const cake = bdays.length ? `<button class="bday-btn" data-bday="${k}" title="${esc(bdays.map(o => o.ev.title).join(', '))}">🧁${bdays.length > 1 ? `<b>${bdays.length}</b>` : ''}</button>` : '';
   return `<div class="cell ${k === today ? 'today' : ''} ${k < today ? 'past' : ''} ${[0, 6].includes(d.getDay()) || hols.some(isDayOff) ? 'we' : ''} ${cake ? 'has-cake' : ''}" data-day="${k}">
-    <div class="ch"><button class="dnum" data-goto="${k}" title="Open day">${d.getDate()}</button>${holLbl}
+    <div class="ch"><button class="dnum" data-goto="${k}" title="Open day">${d.getDate()}</button>${cake}${holLbl}
     <button class="cell-add" title="New event">${svg('plus')}</button></div>
-    <div class="cl">${rest.map(o => draw(o, k)).join('')}</div>${cake}</div>`;
+    <div class="cl">${rest.map(o => draw(o, k)).join('')}</div></div>`;
 }
 /* ---------------- week: seven (or five) month-style day boxes ---------------- */
 function renderWeekCols() {
@@ -743,8 +743,9 @@ function moveOcc(o, ns, ne) {
 function renderYear() {
   const y = cur.getFullYear();
   const occ = getOcc(new Date(y, 0, 1), new Date(y + 1, 0, 1));
-  const count = {}, hol = {}, off = {};
+  const count = {}, hol = {}, off = {}, bd = {};
   for (const o of occ) {
+    if (isBirthday(o)) (bd[ymd(o.start)] ||= []).push(o.ev.title);
     // holiday labels (public holidays, School Holiday) mark the day but don't count as events; real days off also get the weekend shading
     if (isHoliday(o)) { hol[ymd(o.start)] = o.ev.title; if (isDayOff(o)) off[ymd(o.start)] = true; continue; }
     let d = startOfDay(o.start);
@@ -761,8 +762,8 @@ function renderYear() {
     for (let d = 1; d <= dim; d++) {
       const dt = new Date(y, m, d), k = ymd(dt), c = count[k] || 0;
       const lvl = c >= 5 ? 'l3' : c >= 3 ? 'l2' : c >= 1 ? 'l1' : '';
-      const tip = [hol[k], c ? `${c} event${c > 1 ? 's' : ''}` : ''].filter(Boolean).join(' · ');
-      h += `<button class="ym-d ${lvl} ${k === today ? 'td' : ''} ${k < today ? 'past' : ''} ${hol[k] ? 'hd' : ''} ${[0, 6].includes(dt.getDay()) || off[k] ? 'we' : ''}" data-goto="${k}" title="${esc(tip)}">${d}</button>`;
+      const tip = [hol[k], bd[k] ? '🧁 ' + bd[k].join(', ') : '', c ? `${c} event${c > 1 ? 's' : ''}` : ''].filter(Boolean).join(' · ');
+      h += `<button class="ym-d ${lvl} ${k === today ? 'td' : ''} ${k < today ? 'past' : ''} ${hol[k] ? 'hd' : ''} ${[0, 6].includes(dt.getDay()) || off[k] ? 'we' : ''}" data-goto="${k}" title="${esc(tip)}"><span class="ym-n">${d}</span>${bd[k] ? '<span class="ym-cake">🧁</span>' : ''}</button>`;
     }
     if (trail) h += `<div class="ym-blank" style="grid-column: span ${trail}"></div>`; // … and so do the days of the next month
     h += '</div></div>';
