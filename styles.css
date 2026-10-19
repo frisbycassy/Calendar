@@ -739,3 +739,12 @@ kbd { display: inline-block; min-width: 22px; text-align: center; padding: 2px 6
 /* Days that have passed: one straight diagonal line corner to corner ("/"), like crossing the day off a paper calendar */
 .cell.past::after { content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 1;
   background: linear-gradient(to bottom right, transparent calc(50% - .8px), color-mix(in srgb, var(--text) 55%, transparent) calc(50% - .8px) calc(50% + .8px), transparent calc(50% + .8px)); }
+
+/* ================= Week view: month-style day boxes ================= */
+.month.cols5 { grid-template-columns: 30px repeat(5, minmax(0, 1fr)); }
+.month.cols5.nowk { grid-template-columns: 0 repeat(5, minmax(0, 1fr)); }
+.month.weekcols { grid-template-rows: 40px minmax(0, 1fr); }
+.weekcols .dnum { font-size: 16px; }
+.planner.weekcols .dnum { font-size: 18px; }
+.planner.weekcols .today .dnum { width: 28px; height: 28px; min-width: 28px; font-size: 14px; }
+.weekcols .ch { min-height: 30px; }

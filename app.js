@@ -475,13 +475,14 @@ function render() {
   if (view === 'month') html = renderMonth();
   else if (view === 'year') html = renderYear();
   else if (view === 'agenda') html = renderAgenda();
+  else if (view === 'week' || view === 'workweek') html = renderWeekCols();
   else html = renderGrid();
   // Big title with the previous / next arrows either side, at the top of every view.
   const head = `<div class="vhead"><button class="nav-arrow" data-nav="-1" title="Previous (←)">${svg('chevronLeft')}</button>`
     + `<h2 class="mtitle">${esc(titleText())}</h2><button class="nav-arrow" data-nav="1" title="Next (→)">${svg('chevronRight')}</button></div>`;
   v.innerHTML = head + banner + html;
-  if (view === 'month') fitMonth();
-  if (['day', 'week', 'workweek'].includes(view)) bindGrid();
+  if (view === 'month' || view === 'week' || view === 'workweek') fitMonth();
+  if (view === 'day') bindGrid();
   renderSidebar();
   renderUpNext();
   updateBrand();
@@ -516,20 +517,39 @@ function renderMonth() {
         h += `<div class="cell blank" style="grid-column: span ${n}"></div>`;
         c += n - 1; continue;
       }
-      const d = addDays(ws, c), k = ymd(d), list = byDay[k] || [];
-      const hol = list.find(o => o.ev.holiday);
-      const label = d.getDate();
-      const bdays = list.filter(isBirthday);
-      const hols = list.filter(o => !isBirthday(o) && isHoliday(o));
-      const rest = list.filter(o => !isBirthday(o) && !isHoliday(o));
-      const holLbl = hols.map(o => `<button class="hol-lbl" data-key="${esc(o.key)}" style="--c:${isSchoolHoliday(o) ? HOLIDAY_GREY : o.cal.color}" title="${esc(o.ev.title)}">${esc(o.ev.title)}</button>`).join('');
-      const cake = bdays.length ? `<button class="bday-btn" data-bday="${k}" title="${esc(bdays.map(o => o.ev.title).join(', '))}">🧁${bdays.length > 1 ? `<b>${bdays.length}</b>` : ''}</button>` : '';
-      h += `<div class="cell ${d.getMonth() !== cur.getMonth() ? 'o' : ''} ${k === today ? 'today' : ''} ${k < today ? 'past' : ''} ${[0, 6].includes(d.getDay()) || hols.some(isDayOff) ? 'we' : ''} ${cake ? 'has-cake' : ''}" data-day="${k}">
-        <div class="ch"><button class="dnum" data-goto="${k}" title="Open day">${label}</button>${holLbl}
-        <button class="cell-add" title="New event">${svg('plus')}</button></div>
-        <div class="cl">${rest.map(o => draw(o, k)).join('')}</div>${cake}</div>`;
+      const d = addDays(ws, c);
+      h += dayCell(d, byDay[ymd(d)] || [], today, draw);
     }
   }
+  return h + '</div>';
+}
+/* One day box, used by the month view and the week view so they always look the same. */
+function dayCell(d, list, today, draw) {
+  const k = ymd(d);
+  const bdays = list.filter(isBirthday);
+  const hols = list.filter(o => !isBirthday(o) && isHoliday(o));
+  const rest = list.filter(o => !isBirthday(o) && !isHoliday(o));
+  const holLbl = hols.map(o => `<button class="hol-lbl" data-key="${esc(o.key)}" style="--c:${isSchoolHoliday(o) ? HOLIDAY_GREY : o.cal.color}" title="${esc(o.ev.title)}">${esc(o.ev.title)}</button>`).join('');
+  const cake = bdays.length ? `<button class="bday-btn" data-bday="${k}" title="${esc(bdays.map(o => o.ev.title).join(', '))}">🧁${bdays.length > 1 ? `<b>${bdays.length}</b>` : ''}</button>` : '';
+  return `<div class="cell ${k === today ? 'today' : ''} ${k < today ? 'past' : ''} ${[0, 6].includes(d.getDay()) || hols.some(isDayOff) ? 'we' : ''} ${cake ? 'has-cake' : ''}" data-day="${k}">
+    <div class="ch"><button class="dnum" data-goto="${k}" title="Open day">${d.getDate()}</button>${holLbl}
+    <button class="cell-add" title="New event">${svg('plus')}</button></div>
+    <div class="cl">${rest.map(o => draw(o, k)).join('')}</div>${cake}</div>`;
+}
+/* ---------------- week: seven (or five) month-style day boxes ---------------- */
+function renderWeekCols() {
+  const [start, n] = gridRange();
+  const end = addDays(start, n);
+  const byDay = {};
+  for (const o of getOcc(start, end)) {
+    let d = startOfDay(o.start);
+    do { if (d >= start && d < end) (byDay[ymd(d)] ||= []).push(o); d = addDays(d, 1); } while (d < o.end);
+  }
+  const today = ymd(new Date()), planner = plannerLook(), draw = planner ? sticker : chip;
+  let h = `<div class="month weekcols ${planner ? 'planner' : ''} cols${n} ${S.settings.weekNums ? '' : 'nowk'}" style="--rows:1"><div class="wdc"></div>`;
+  for (let i = 0; i < n; i++) h += `<div class="wd"><span class="l">${fmt(addDays(start, i), { weekday: 'long' })}</span><span class="s">${fmt(addDays(start, i), { weekday: 'short' })}</span></div>`;
+  h += `<div class="wk" title="Week ${isoWeek(start)}">${isoWeek(addDays(start, 3))}</div>`;
+  for (let i = 0; i < n; i++) { const d = addDays(start, i); h += dayCell(d, byDay[ymd(d)] || [], today, draw); }
   return h + '</div>';
 }
 /* Hide chips that don't fit and replace them with "+N more". */
@@ -541,7 +561,7 @@ function fitMonth() {
     cl.style.cssText = 'display:flex;flex-direction:column;min-height:0;flex:1;overflow:hidden';
     if (plannerLook()) {
       // Planner look: shrink the text until every event fits in the day box.
-      let fs = 13;
+      let fs = cell.closest('.weekcols') ? 15 : 13; // week boxes are taller, so start with larger text
       cl.style.fontSize = fs + 'px';
       const overflows = () => cl.scrollHeight > cl.clientHeight + 1 || cl.scrollWidth > cl.clientWidth + 1;
       while (overflows() && fs > 7) { fs -= 0.5; cl.style.fontSize = fs + 'px'; }
