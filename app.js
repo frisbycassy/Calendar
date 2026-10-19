@@ -401,7 +401,7 @@ const tShort = d => S.settings.h24 ? hm(d) : `${d.getHours() % 12 || 12}${d.getM
 function sticker(o, day) {
   const ic = eventIcon(o.ev, o.cal);
   const common = `style="--c:${o.cal.color}" data-key="${esc(o.key)}" draggable="${!o.ro}" title="${esc(o.ev.title)}"`;
-  const state = `${isDone(o) ? 'done' : ''} ${o.ro ? 'ro' : ''}`;
+  const state = `${isDone(o) ? 'done' : ''} ${o.ro ? 'ro' : ''} ${o.end <= new Date() ? 'pastev' : ''}`;
   if (o.ev.allDay || multiDay(o)) {
     // No time: the tick box sits right after the icon, before the name.
     return `<div class="chip tag ${state}" ${common}>${taskBox(o)}${ic ? `<span class="ic">${ic}</span>` : ''}<span class="st-tx"><span class="ti">${esc(o.ev.title)}</span>${pplIcon(o)}</span></div>`;

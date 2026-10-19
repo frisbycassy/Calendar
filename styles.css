@@ -810,3 +810,6 @@ kbd { display: inline-block; min-width: 22px; text-align: center; padding: 2px 6
 
 /* once an event's end time has passed, scratch out its time */
 .chip.st .t.tpast .tt { text-decoration: line-through; }
+
+/* events that have already ended: grey text */
+.chip.pastev .ti, .chip.pastev .t { color: var(--muted) !important; }
