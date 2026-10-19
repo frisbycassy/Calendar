@@ -813,3 +813,7 @@ kbd { display: inline-block; min-width: 22px; text-align: center; padding: 2px 6
 
 /* events that have already ended: grey text */
 .chip.pastev .ti, .chip.pastev .t { color: var(--muted) !important; }
+
+/* ended events: one line through the whole entry (time + name) */
+.chip.pastev .ti, .chip.pastev .tt { text-decoration: line-through; text-decoration-thickness: 1.5px; }
+.chip.pastev .tt { text-decoration: line-through !important; }
