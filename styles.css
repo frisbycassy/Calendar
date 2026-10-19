@@ -735,3 +735,7 @@ kbd { display: inline-block; min-width: 22px; text-align: center; padding: 2px 6
 
 /* Finished tasks: the time gets the same line through it as the name (the tick circle itself is left alone) */
 .chip.done .t, .chip.done .st-tx, .ev.done .ev-m, .ag-item.done .ag-time, .un .done .tx small { text-decoration: line-through; text-decoration-thickness: 1.5px; }
+
+/* Days that have passed: one straight diagonal line corner to corner ("/"), like crossing the day off a paper calendar */
+.cell.past::after { content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 1;
+  background: linear-gradient(to bottom right, transparent calc(50% - .8px), color-mix(in srgb, var(--text) 55%, transparent) calc(50% - .8px) calc(50% + .8px), transparent calc(50% + .8px)); }
