@@ -336,13 +336,14 @@ function funHolidays(y) {
     [nth(10, 5, 4), 'Black Friday', '🛍️'], [new Date(y, 11, 24), 'Christmas Eve', '🎄'], [new Date(y, 11, 31), "New Year's Eve", '🥳'],
   ];
   return funCache[y] = list.map(([d, n, ic]) => ({
-    id: 'fun-' + ymd(d) + '-' + n.length, calId: 'fun', title: 'Fun Holiday: ' + n, start: ymd(d) + 'T00:00', end: ymd(d) + 'T00:00', allDay: true, repeat: 'none', icon: ic, readonly: true, fun: true,
+    id: 'fun-' + ymd(d) + '-' + n.length, calId: 'fun', title: n, start: ymd(d) + 'T00:00', end: ymd(d) + 'T00:00', allDay: true, repeat: 'none', icon: ic, readonly: true, fun: true,
   }));
 }
 /* The "Fun holidays" folder with its calendar (added once for calendars saved by older versions). */
 function ensureFun() {
   if (!S.groups.some(g => g.id === 'g-fun')) S.groups.push({ id: 'g-fun', name: 'Fun holidays' });
-  if (!S.cals.some(c => c.id === 'fun')) S.cals.push({ id: 'fun', name: 'Fun holidays', color: '#ff922b', icon: '🎉', groupId: 'g-fun', visible: true, readonly: true });
+  if (!S.cals.some(c => c.id === 'fun')) S.cals.push({ id: 'fun', name: 'Fun holidays', color: '#868e96', icon: '🎉', groupId: 'g-fun', visible: true, readonly: true });
+  const f = S.cals.find(c => c.id === 'fun'); if (f) f.color = '#868e96'; // same colour as the public holidays
 }
 window.ensureFun = ensureFun;
 
