@@ -399,6 +399,61 @@ const Sync = (() => {
     });
   }
 
+  /* ---------- put the built-in holidays into Google (two new calendars) ---------- */
+  // Creates "South Africa holidays" and "Fun holidays" in Google and fills them with all-day events for the given
+  // years. Safe to run again: anything already there is skipped. Afterwards the built-in copies are switched off.
+  async function holidaysToGoogle(years = [2026, 2027, 2028], say = m => toast(m, { icon: 'cloud', ms: 5000 })) {
+    await refreshStatus();
+    const acc = (status?.accounts || []).find(a => a.provider === 'google');
+    if (!acc) throw new Error('Connect your Google account first');
+    const SETS = [
+      { name: 'South Africa holidays', list: y => zaHolidays(y) },
+      { name: 'Fun holidays', list: y => funHolidays(y) },
+    ];
+    busy = true; spin(true);
+    try {
+      const have = await google.calendars(acc.id);
+      for (const set of SETS) {
+        let rc = have.find(c => c.name === set.name && !c.readonly);
+        if (!rc) {
+          const made = await api(acc.id, 'POST', `${GAPI}/calendars`, { summary: set.name, timeZone: TZ });
+          rc = { remoteId: made.id };
+          say(`Created “${set.name}” in Google`);
+        }
+        const id = encodeURIComponent(rc.remoteId), base = `${GAPI}/calendars/${id}/events`;
+        // what is already there (so running this twice never doubles anything)
+        const exist = new Set(); let pt = '';
+        do {
+          const q = new URLSearchParams({ singleEvents: 'true', maxResults: '2500', timeMin: `${Math.min(...years)}-01-01T00:00:00Z`, timeMax: `${Math.max(...years) + 1}-01-02T00:00:00Z` });
+          if (pt) q.set('pageToken', pt);
+          const j = await api(acc.id, 'GET', `${base}?${q}`);
+          (j.items || []).forEach(g => g.start?.date && exist.add(g.summary + '|' + g.start.date)); pt = j.nextPageToken;
+        } while (pt);
+        const todo = years.flatMap(y => set.list(y)).filter(e => !exist.has(e.title + '|' + e.start.slice(0, 10)));
+        let n = 0;
+        for (const e of todo) {
+          const day = e.start.slice(0, 10);
+          await api(acc.id, 'POST', `${base}?sendUpdates=none`, {
+            summary: e.title, start: { date: day }, end: { date: ymd(addDays(parse(day), 1)) },
+            transparency: 'transparent', reminders: { useDefault: false, overrides: [] },
+          });
+          if (++n % 20 === 0) say(`${set.name}: ${n} of ${todo.length} added…`);
+          await sleep(150);
+        }
+        say(`${set.name}: ${todo.length ? todo.length + ' added' : 'already complete'}`);
+      }
+      // bring the new calendars in, put "Fun holidays" in its own folder, and retire the built-in copies
+      await discover(acc);
+      const fun = S.cals.find(c => c.source?.account === acc.id && c.name === 'Fun holidays');
+      if (fun) { if (!S.groups.some(g => g.id === 'g-fun')) S.groups.push({ id: 'g-fun', name: 'Fun holidays' }); fun.groupId = 'g-fun'; }
+      S.settings.holidaysInGoogle = true;
+      S.cals = S.cals.filter(c => c.id !== 'za' && c.id !== 'fun');
+      for (const c of S.cals.filter(c => c.source?.account === acc.id && SETS.some(s => s.name === c.name))) await syncCal(c);
+      save(); render();
+      say('Holidays are now in your Google Calendar ✓');
+    } finally { busy = false; spin(false); }
+  }
+
   /* ---------- accounts & feeds ---------- */
   async function connect(provider) {
     // Open the window straight away (so the browser allows it), then point it at the sign-in page.
@@ -594,7 +649,7 @@ const Sync = (() => {
   }
 
   return {
-    init, syncAll, pushSave, pushSeries, removeSeries, openDialog, forget, isRemoteCal,
+    init, syncAll, pushSave, pushSeries, removeSeries, openDialog, forget, isRemoteCal, holidaysToGoogle,
     get online() { return !!status; },
     providerName: cal => NAMES[cal?.source?.type] || '',
   };

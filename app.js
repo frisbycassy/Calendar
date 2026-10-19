@@ -341,6 +341,7 @@ function funHolidays(y) {
 }
 /* The "Fun holidays" folder with its calendar (added once for calendars saved by older versions). */
 function ensureFun() {
+  if (S.settings.holidaysInGoogle) return; // they live in Google now
   if (!S.groups.some(g => g.id === 'g-fun')) S.groups.push({ id: 'g-fun', name: 'Fun holidays' });
   if (!S.cals.some(c => c.id === 'fun')) S.cals.push({ id: 'fun', name: 'Fun holidays', color: '#868e96', icon: '🎉', groupId: 'g-fun', visible: true, readonly: true });
   const f = S.cals.find(c => c.id === 'fun'); if (f) f.color = '#868e96'; // same colour as the public holidays
@@ -452,7 +453,8 @@ const plannerLook = () => S.settings.look === 'planner';
 /* Holiday labels sit next to the date number in month view: public holidays (built-in or a subscribed
    "Holidays…" calendar) and all-day events called "School Holiday" (kept in your Au Pair calendar). */
 const isSchoolHoliday = o => /^school holidays?$/i.test((o.ev.title || '').trim()) && (o.ev.allDay || o.end - o.start >= 864e5);
-const isHoliday = o => !!o.ev.holiday || !!o.ev.fun || (/holiday/i.test(o.cal.name) && !!o.cal.readonly) || isSchoolHoliday(o);
+const isHoliday = o => !!o.ev.holiday || !!o.ev.fun || (/holiday/i.test(o.cal.name) && (!!o.cal.readonly || isOwnHolCal(o.cal))) || isSchoolHoliday(o);
+const isOwnHolCal = c => /^(south africa|fun) holidays$/i.test((c.name || '').trim()); // the two holiday calendars kept in Google
 const HOLIDAY_GREY = '#868e96';
 /* A real day off: a built-in public holiday, or a holiday-calendar event marked "Public holiday" (not observances). */
 const isDayOff = o => !!o.ev.holiday || (isHoliday(o) && /public holiday/i.test(`${o.ev.notes || ''} ${o.ev.title}`));
@@ -566,7 +568,7 @@ function dayCell(d, list, today, draw) {
   const bdays = list.filter(isBirthday);
   const hols = list.filter(o => !isBirthday(o) && isHoliday(o));
   const rest = list.filter(o => !isBirthday(o) && !isHoliday(o));
-  const holLbl = hols.map(o => `<button class="hol-lbl" data-key="${esc(o.key)}" style="--c:${isSchoolHoliday(o) ? HOLIDAY_GREY : o.cal.color}" title="${esc(o.ev.title)}">${esc(o.ev.title)}</button>`).join('');
+  const holLbl = hols.map(o => `<button class="hol-lbl" data-key="${esc(o.key)}" style="--c:${isSchoolHoliday(o) || isOwnHolCal(o.cal) ? HOLIDAY_GREY : o.cal.color}" title="${esc(o.ev.title)}">${esc(o.ev.title)}</button>`).join('');
   const cake = bdays.length ? `<button class="bday-btn" data-bday="${k}" title="${esc(bdays.map(o => o.ev.title).join(', '))}">🧁${bdays.length > 1 ? `<b>${bdays.length}</b>` : ''}</button>` : '';
   return `<div class="cell ${k === today ? 'today' : ''} ${k < today ? 'past' : ''} ${[0, 6].includes(d.getDay()) || hols.some(isDayOff) ? 'we' : ''} ${cake ? 'has-cake' : ''}" data-day="${k}">
     <div class="ch"><button class="dnum" data-goto="${k}" title="Open day">${d.getDate()}</button>${cake}${holLbl}
