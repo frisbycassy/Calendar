@@ -714,3 +714,6 @@ kbd { display: inline-block; min-width: 22px; text-align: center; padding: 2px 6
 [data-theme="dark"][data-bg="graphite"] { --base: linear-gradient(135deg, #111215 0%, #1b1d22 50%, #131519 100%); --accent: #74839a; --accent-2: #546073; }
 /* the soft-grey Graphite accent is mid-tone, so buttons on it keep white text readable */
 [data-bg="graphite"] .btn.primary { background: linear-gradient(135deg, var(--accent), var(--accent-2)); }
+
+/* 12-hour time boxes in the event editor */
+.row input.t12 { width: 104px; text-align: center; }

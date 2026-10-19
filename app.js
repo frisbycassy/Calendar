@@ -1635,8 +1635,39 @@ function readSettings() {
 }
 
 /* ---------------- wiring ---------------- */
+/* Time boxes in the event editor: show 12-hour times (2:00pm) whatever the computer's regional settings are.
+   Each box still hands the rest of the app a plain "HH:MM" value. Accepts 2pm, 2:30 pm, 14:00, 1430. */
+function parseTime(s) {
+  const m = String(s || '').trim().toLowerCase().replace(/\./g, '').match(/^(\d{1,2})(?::?(\d{2}))?\s*(am|pm|a|p)?$/);
+  if (!m) return null;
+  let h = +m[1]; const mi = +(m[2] || 0), ap = m[3];
+  if (mi > 59) return null;
+  if (ap) { if (h < 1 || h > 12) return null; if (ap[0] === 'p' && h < 12) h += 12; if (ap[0] === 'a' && h === 12) h = 0; }
+  else if (h > 23) return null;
+  return `${pad(h)}:${pad(mi)}`;
+}
+function showTime(v) {
+  if (!v) return '';
+  const [h, m] = v.split(':').map(Number);
+  return S.settings.h24 ? v : `${h % 12 || 12}:${pad(m)}${h < 12 ? 'am' : 'pm'}`;
+}
+function initTimeBoxes() {
+  const nativeGet = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').get;
+  const nativeSet = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
+  $$('.t12').forEach(el => {
+    let v = '';
+    Object.defineProperty(el, 'value', {
+      get() { const p = parseTime(nativeGet.call(el)); if (p) v = p; else if (!nativeGet.call(el).trim()) v = ''; return v; }, // reads what you typed, even before you leave the box
+      set(x) { v = x || ''; nativeSet.call(el, showTime(v)); },
+    });
+    el.addEventListener('change', () => { el.value = el.value; }); // tidy what you typed into "2:00pm" (or put the old time back if it wasn't a time)
+  });
+  $('#times12').innerHTML = [...Array(48)].map((_, i) => `<option value="${showTime(`${pad(Math.floor(i / 2))}:${i % 2 ? '30' : '00'}`)}">`).join('');
+}
+
 function wire() {
   hydrateIcons();
+  initTimeBoxes();
   $('#todayBtn').onclick = goToday;
   $('#backBtn').onclick = goBack;
   $('#newBtn').onclick = () => newOnDay(ymd(cur));
