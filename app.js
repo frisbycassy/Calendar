@@ -246,6 +246,7 @@ if (!S.settings.time12) { S.settings.h24 = false; S.settings.time12 = true; }
 // 10) The default look is Blossom in night mode (set once for every device; you can still change it in Settings and it stays).
 if (!S.settings.nightDefault) { S.settings.theme = 'dark'; S.settings.bg = 'blossom'; }
 S.settings = { ...seed().settings, ...S.settings };
+ensureFun();
 save();
 function save() {
   window.CalCloud?.changed();
@@ -311,6 +312,40 @@ function zaHolidays(y) {
   }));
 }
 
+/* ---------------- fun holidays (Halloween, Easter, Christmas, teacher days…) ---------------- */
+const funCache = {};
+function funHolidays(y) {
+  if (funCache[y]) return funCache[y];
+  const E = easter(y);
+  // nth (1-5) weekday (0=Sun) of a month, or the last one with n = -1
+  const nth = (m, wd, n) => {
+    if (n > 0) { const f = new Date(y, m, 1); return new Date(y, m, 1 + ((wd - f.getDay() + 7) % 7) + (n - 1) * 7); }
+    const l = new Date(y, m + 1, 0); return new Date(y, m, l.getDate() - ((l.getDay() - wd + 7) % 7));
+  };
+  const list = [
+    [new Date(y, 1, 14), "Valentine's Day", '💝'], [addDays(E, -47), 'Shrove Tuesday (Pancake Day)', '🥞'],
+    [addDays(E, -46), 'Ash Wednesday', '✝️'], [new Date(y, 2, 8), "International Women's Day", '💪'], [new Date(y, 2, 14), 'Pi Day', '🥧'],
+    [new Date(y, 2, 17), "St Patrick's Day", '🍀'], [new Date(y, 2, 21), 'World Poetry Day', '📝'], [new Date(y, 3, 1), "April Fools' Day", '🤡'],
+    [addDays(E, -7), 'Palm Sunday', '🌿'], [addDays(E, -3), 'Maundy Thursday', '🍞'], [addDays(E, -1), 'Holy Saturday', '🥚'], [E, 'Easter Sunday', '🐰'],
+    [new Date(y, 3, 22), 'Earth Day', '🌍'], [new Date(y, 3, 23), 'World Book Day', '📚'], [new Date(y, 4, 4), 'Star Wars Day', '🚀'],
+    [nth(4, 0, 2), "Mother's Day", '💐'], [new Date(y, 4, 25), 'Africa Day', '🌍'], [new Date(y, 5, 5), 'World Environment Day', '🌱'],
+    [nth(5, 0, 3), "Father's Day", '👔'], [new Date(y, 6, 18), 'Mandela Day', '🤝'], [new Date(y, 6, 30), 'Friendship Day', '🫶'],
+    [new Date(y, 8, 8), 'International Literacy Day', '📖'], [new Date(y, 8, 21), 'International Day of Peace', '🕊️'],
+    [new Date(y, 9, 5), "World Teachers' Day", '🍎'],
+    [new Date(y, 9, 31), 'Halloween', '🎃'], [new Date(y, 10, 5), 'Guy Fawkes Night', '🎆'], [new Date(y, 10, 20), "Universal Children's Day", '🧒'],
+    [nth(10, 5, 4), 'Black Friday', '🛍️'], [new Date(y, 11, 24), 'Christmas Eve', '🎄'], [new Date(y, 11, 31), "New Year's Eve", '🥳'],
+  ];
+  return funCache[y] = list.map(([d, n, ic]) => ({
+    id: 'fun-' + ymd(d) + '-' + n.length, calId: 'fun', title: 'Fun Holiday: ' + n, start: ymd(d) + 'T00:00', end: ymd(d) + 'T00:00', allDay: true, repeat: 'none', icon: ic, readonly: true, fun: true,
+  }));
+}
+/* The "Fun holidays" folder with its calendar (added once for calendars saved by older versions). */
+function ensureFun() {
+  if (!S.groups.some(g => g.id === 'g-fun')) S.groups.push({ id: 'g-fun', name: 'Fun holidays' });
+  if (!S.cals.some(c => c.id === 'fun')) S.cals.push({ id: 'fun', name: 'Fun holidays', color: '#ff922b', icon: '🎉', groupId: 'g-fun', visible: true, readonly: true });
+}
+window.ensureFun = ensureFun;
+
 /* ---------------- recurrence ---------------- */
 const weekStartMon = d => addDays(startOfDay(d), -((d.getDay() + 6) % 7));
 function occurrences(ev, from, to) {
@@ -364,6 +399,7 @@ function getOcc(from, to, { all = false } = {}) {
   const vis = new Map(S.cals.filter(c => c.visible).map(c => [c.id, c]));
   let evs = S.events.filter(e => vis.has(e.calId));
   if (vis.has('za')) for (let y = from.getFullYear(); y <= to.getFullYear(); y++) evs = evs.concat(zaHolidays(y));
+  if (vis.has('fun')) for (let y = from.getFullYear(); y <= to.getFullYear(); y++) evs = evs.concat(funHolidays(y));
   const q = all ? '' : searchQ.trim().toLowerCase();
   const out = [];
   for (const ev of evs) {
@@ -415,7 +451,7 @@ const plannerLook = () => S.settings.look === 'planner';
 /* Holiday labels sit next to the date number in month view: public holidays (built-in or a subscribed
    "Holidays…" calendar) and all-day events called "School Holiday" (kept in your Au Pair calendar). */
 const isSchoolHoliday = o => /^school holidays?$/i.test((o.ev.title || '').trim()) && (o.ev.allDay || o.end - o.start >= 864e5);
-const isHoliday = o => !!o.ev.holiday || (/holiday/i.test(o.cal.name) && !!o.cal.readonly) || isSchoolHoliday(o);
+const isHoliday = o => !!o.ev.holiday || !!o.ev.fun || (/holiday/i.test(o.cal.name) && !!o.cal.readonly) || isSchoolHoliday(o);
 const HOLIDAY_GREY = '#868e96';
 /* A real day off: a built-in public holiday, or a holiday-calendar event marked "Public holiday" (not observances). */
 const isDayOff = o => !!o.ev.holiday || (isHoliday(o) && /public holiday/i.test(`${o.ev.notes || ''} ${o.ev.title}`));

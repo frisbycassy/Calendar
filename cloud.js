@@ -71,7 +71,7 @@
       S.groups = j.data.groups || S.groups; S.cals = j.data.cals || S.cals; S.events = j.data.events || [];
       const mine = Object.fromEntries(DEVICE_ONLY.map(k => [k, S.settings[k]]));
       S.settings = { ...S.settings, ...(j.data.settings || {}), ...mine }; // this device keeps its own look
-      put(REV_KEY, String(j.updated_at)); save(); render();
+      window.ensureFun?.(); put(REV_KEY, String(j.updated_at)); save(); render();
     }
     pushed = JSON.stringify(payload());
   }
