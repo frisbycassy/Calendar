@@ -781,4 +781,8 @@ kbd { display: inline-block; min-width: 22px; text-align: center; padding: 2px 6
 .ym-blank { background: var(--we-bg, var(--off)); }
 
 /* Year view: no colour for busy days. Only today is highlighted, and weekends are a touch darker. */
-[data-look="planner"] .ym-d.l1:not(.we):not(.td), [data-look="planner"] .ym-d.l2:not(.we):not(.td), [data-look="planner"] .ym-d.l3:not(.we):not(.td) { background: transparent; color: var(--muted); font-weight: 400; }
+[data-look="planner"] .ym-d.l1:not(.we):not(.td), [data-look="planner"] .ym-d.l2:not(.we):not(.td), [data-look="planner"] .ym-d.l3:not(.we):not(.td) { background: transparent; font-weight: 400; }
+
+/* Year view: holiday dates (public holidays, South African holidays, School Holiday) are pink, not red */
+.ym-d.hd, [data-look="planner"] .ym-d.hd { color: #d9306f; font-weight: 400; }
+[data-theme="dark"] .ym-d.hd, [data-theme="dark"][data-look="planner"] .ym-d.hd { color: #ff7aa8; }
