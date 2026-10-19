@@ -10,6 +10,9 @@
   if (!API) return; // running on your computer: nothing to do
 
   const TOKEN_KEY = 'glasscal.token', REV_KEY = 'glasscal.cloudrev';
+  // How each device looks (light/dark, colour theme, month style, which view is open) stays on that device,
+  // so your phone being dark never changes your computer, and a second open copy can't undo your choice.
+  const DEVICE_ONLY = ['theme', 'bg', 'look', 'view'];
   const get = k => { try { return localStorage.getItem(k) || ''; } catch { return ''; } };
   const put = (k, v) => { try { v ? localStorage.setItem(k, v) : localStorage.removeItem(k); } catch { } };
   let token = get(TOKEN_KEY), pushed = '', timer = null, waiters = [];
@@ -52,7 +55,7 @@
       groups: S.groups,
       cals: S.cals.map(c => c.source ? { ...c, source: { ...c.source, lastSync: undefined, error: undefined } } : c),
       events: S.events.filter(e => !remote.has(e.calId) || e.icon || e.task || (e.doneDates && e.doneDates.length)),
-      settings: S.settings,
+      settings: Object.fromEntries(Object.entries(S.settings).filter(([k]) => !DEVICE_ONLY.includes(k))),
     };
   }
   async function call(path, init = {}) {
@@ -66,8 +69,8 @@
     const mine = +get(REV_KEY) || 0;
     if (j.data && j.updated_at > mine) {
       S.groups = j.data.groups || S.groups; S.cals = j.data.cals || S.cals; S.events = j.data.events || [];
-      S.settings = { ...S.settings, ...(j.data.settings || {}) };
-      view = S.settings.view || view;
+      const mine = Object.fromEntries(DEVICE_ONLY.map(k => [k, S.settings[k]]));
+      S.settings = { ...S.settings, ...(j.data.settings || {}), ...mine }; // this device keeps its own look
       put(REV_KEY, String(j.updated_at)); save(); render();
     }
     pushed = JSON.stringify(payload());
