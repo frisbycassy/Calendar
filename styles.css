@@ -553,7 +553,7 @@ kbd { display: inline-block; min-width: 22px; text-align: center; padding: 2px 6
 .pk-main a.btn { color: inherit; }
 .pk-main a.btn.primary { color: #fff; }
 .when { font-style: normal; font-size: 11.5px; font-weight: 700; align-self: flex-start; margin-top: 3px; padding: 2px 9px; border-radius: 20px; background: var(--accent-soft); color: var(--accent); }
-.when.live { background: #2f9e44; color: #fff; }
+.when.live { background: var(--accent-soft); color: var(--accent); }
 .when.soon { background: var(--accent); color: #fff; }
 .when.past { background: var(--line-2); color: var(--muted); }
 .pk-loc { overflow-wrap: anywhere; }
