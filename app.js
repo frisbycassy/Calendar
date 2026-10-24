@@ -135,6 +135,7 @@ const BG_PREVIEW = {
 };
 
 function eventIcon(ev, cal) {
+  if (ev.icon === 'none') return ''; // chosen "None": no icon at all
   if (ev.icon) return ev.icon;
   if (S.settings.smartIcons) for (const [re, e] of SMART) if (re.test(ev.title)) return e;
   return cal?.icon || '';
@@ -960,7 +961,7 @@ function showDayPop(k, anchor, onlyBirthdays) {
     ? `🧁 ${list.length > 1 ? `${list.length} birthdays` : 'Birthday'} · ${fmt(d, { day: 'numeric', month: 'long' })}`
     : fmt(d, { weekday: 'long', day: 'numeric', month: 'long' });
   const rows = onlyBirthdays
-    ? list.map(o => `<button class="bday-row" data-key="${esc(o.key)}" style="--c:${o.cal.color}"><span class="bd-ic">${o.ev.icon || '🎂'}</span>
+    ? list.map(o => `<button class="bday-row" data-key="${esc(o.key)}" style="--c:${o.cal.color}"><span class="bd-ic">${o.ev.icon === 'none' ? '' : o.ev.icon || '🎂'}</span>
         <span><b>${esc(o.ev.title.replace(/['\u2019]?s?\s*(birthday|b-?day)\s*$/i, '').trim() || o.ev.title)}</b><small>${esc(o.ev.title)}${pplTag(o.ev)}</small></span></button>`).join('')
     : list.map(o => chip(o, k)).join('');
   pop.innerHTML = `<h4><span>${head}</span><button class="ib sm" data-act="closePop">${svg('x')}</button></h4>${rows}`;
@@ -1271,9 +1272,9 @@ function syncEditor() {
   const cal = S.cals.find(c => c.id === $('#evCal').value);
   const btn = $('#evIconBtn');
   btn.style.setProperty('--c', cal?.color || 'var(--accent)');
-  const ic = editIcon || eventIcon({ title: $('#evTitle').value, icon: '' }, cal);
+  const ic = editIcon === 'none' ? '' : editIcon || eventIcon({ title: $('#evTitle').value, icon: '' }, cal);
   btn.innerHTML = ic || svg('smile');
-  btn.title = editIcon ? 'Icon (click to change)' : 'Automatic icon — click to choose your own';
+  btn.title = editIcon === 'none' ? 'No icon — click to change' : editIcon ? 'Icon (click to change)' : 'Automatic icon — click to choose your own';
 }
 function readForm() {
   const allDay = $('#evAll').checked;
@@ -2036,7 +2037,7 @@ function wire() {
   $('#evIconBtn').onclick = () => {
     const p = $('#evIconPop');
     if (!p.hidden) { p.hidden = true; return; }
-    p.innerHTML = `<button type="button" class="txt" data-em="">✨ Auto</button>` + EMOJIS.map(e => `<button type="button" data-em="${e}">${e}</button>`).join('');
+    p.innerHTML = `<button type="button" class="txt" data-em="">✨ Auto</button><button type="button" class="txt" data-em="none">🚫 None</button>` + EMOJIS.map(e => `<button type="button" data-em="${e}">${e}</button>`).join('');
     p.hidden = false;
   };
   $('#evIconPop').onclick = e => { const b = e.target.closest('[data-em]'); if (!b) return; editIcon = b.dataset.em; $('#evIconPop').hidden = true; syncEditor(); };
