@@ -567,7 +567,8 @@ function dayCell(d, list, today, draw) {
   const k = ymd(d);
   const bdays = list.filter(isBirthday);
   const hols = list.filter(o => !isBirthday(o) && isHoliday(o));
-  const rest = list.filter(o => !isBirthday(o) && !isHoliday(o));
+  // timed events first (in time order), all-day ones underneath
+  const rest = list.filter(o => !isBirthday(o) && !isHoliday(o)).sort((a, b) => (multiDay(a) - multiDay(b)) || (a.start - b.start));
   const holLbl = hols.map(o => `<button class="hol-lbl" data-key="${esc(o.key)}" style="--c:${isSchoolHoliday(o) || isOwnHolCal(o.cal) ? HOLIDAY_GREY : o.cal.color}" title="${esc(o.ev.title)}">${esc(o.ev.title)}</button>`).join('');
   const cake = bdays.length ? `<button class="bday-btn" data-bday="${k}" title="${esc(bdays.map(o => o.ev.title).join(', '))}">🧁${bdays.length > 1 ? `<b>${bdays.length}</b>` : ''}</button>` : '';
   return `<div class="cell ${k === today ? 'today' : ''} ${k < today ? 'past' : ''} ${[0, 6].includes(d.getDay()) || hols.some(isDayOff) ? 'we' : ''} ${cake ? 'has-cake' : ''}" data-day="${k}">
