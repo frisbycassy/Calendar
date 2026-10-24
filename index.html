@@ -2,12 +2,12 @@
 <html lang="en" data-theme="dark" data-bg="blossom">
 <head>
 <script>
-/* Apply the saved theme before the page paints, so there's no flash of the wrong colours. Default: Blossom, night mode. */
+/* Apply the saved theme before the page paints, so there's no flash of the wrong colours. Default: Starry, night mode. */
 try {
   var st = (JSON.parse(localStorage.getItem('glasscal.v1') || 'null') || {}).settings || {};
   var th = st.theme === 'auto' ? (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : (st.theme || 'dark');
   document.documentElement.dataset.theme = th;
-  document.documentElement.dataset.bg = st.bg || 'blossom';
+  document.documentElement.dataset.bg = st.starryDefault ? (st.bg || 'starry') : 'starry';
 } catch (e) { }
 </script>
 <meta charset="utf-8">
@@ -17,7 +17,7 @@ try {
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Macondo&family=Rye&family=Patrick+Hand&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=20261024152401">
+<link rel="stylesheet" href="styles.css?v=20261024152709">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-192.png">
 <meta name="theme-color" content="#ffc4dd">
@@ -278,9 +278,9 @@ try {
   </form>
 </dialog>
 
-<script src="config.js?v=20261024152401"></script>
-<script src="app.js?v=20261024152401"></script>
-<script src="cloud.js?v=20261024152401"></script>
-<script src="sync.js?v=20261024152401"></script>
+<script src="config.js?v=20261024152709"></script>
+<script src="app.js?v=20261024152709"></script>
+<script src="cloud.js?v=20261024152709"></script>
+<script src="sync.js?v=20261024152709"></script>
 </body>
 </html>
