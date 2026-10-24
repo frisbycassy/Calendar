@@ -842,3 +842,15 @@ kbd { display: inline-block; min-width: 22px; text-align: center; padding: 2px 6
 /* Starry: keep past (greyed) text easy to read on the pink */
 [data-bg="starry"] .cell.past > * { opacity: .9; filter: none; }
 [data-bg="starry"] .chip.pastev .ti, [data-bg="starry"] .chip.pastev .t { color: rgba(255,255,255,.78) !important; }
+
+/* Starry: two star layers that fade in and out slowly, out of step with each other */
+[data-bg="starry"] .bg::before, [data-bg="starry"] .bg::after { content: ""; position: absolute; inset: 0; pointer-events: none; filter: drop-shadow(0 0 2px rgba(255,255,255,.95)); }
+[data-bg="starry"] .bg::before { background-image: radial-gradient(1.95px 1.95px at 18px 26px, #fff 55%, transparent 100%), radial-gradient(1.5px 1.5px at 96px 142px, #fff 55%, transparent 100%),
+    radial-gradient(2.55px 2.55px at 150px 64px, #fff 50%, transparent 100%), radial-gradient(1.65px 1.65px at 58px 190px, #ffe6f2 55%, transparent 100%);
+  background-size: 230px 210px, 190px 250px, 310px 270px, 170px 230px; animation: twinkleA 7s ease-in-out infinite alternate; }
+[data-bg="starry"] .bg::after { background-image: radial-gradient(2.1px 2.1px at 40px 90px, #fff 55%, transparent 100%), radial-gradient(1.5px 1.5px at 210px 30px, #ffeaf4 55%, transparent 100%),
+    radial-gradient(2.85px 2.85px at 120px 20px, #fff 50%, transparent 100%);
+  background-size: 270px 190px, 330px 290px, 410px 350px; animation: twinkleB 11s ease-in-out infinite alternate; }
+@keyframes twinkleA { from { opacity: .25; } to { opacity: 1; } }
+@keyframes twinkleB { from { opacity: 1; } to { opacity: .2; } }
+@media (prefers-reduced-motion: reduce) { [data-bg="starry"] .bg::before, [data-bg="starry"] .bg::after { animation: none; } }
