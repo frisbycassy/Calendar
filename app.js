@@ -2080,7 +2080,7 @@ function wire() {
   $('#evImgAdd').onclick = () => $('#evImgFile').click();
   $('#evImgFile').onchange = async e => { await addImages([...e.target.files]); e.target.value = ''; };
   $('#evImgs').onclick = e => { const b = e.target.closest('[data-rmimg]'); if (b) { editImages.splice(+b.dataset.rmimg, 1); drawEditImages(); } };
-  $('#evNotes').addEventListener('paste', e => { const f = [...(e.clipboardData?.files || [])].filter(x => /^image\//.test(x.type)); if (f.length) { e.preventDefault(); addImages(f); } });
+  $('#dlgEvent').addEventListener('paste', e => { const f = [...(e.clipboardData?.files || [])].filter(x => /^image\//.test(x.type)); if (f.length) { e.preventDefault(); addImages(f); } });
   $('#peek').addEventListener('click', e => {
     const all = e.target.closest('[data-viewall]'); const im = e.target.closest('[data-img]');
     const imgs = peekOcc?.ev?.images || [];
