@@ -828,3 +828,14 @@ kbd { display: inline-block; min-width: 22px; text-align: center; padding: 2px 6
 [data-look="planner"][data-bg="starry"][data-theme="dark"] { --paper: rgba(255,170,210,.05); --we-bg: rgba(40,0,25,.2); --grid: rgba(255,255,255,.34); }
 [data-bg="starry"] .month.planner .cell { background-color: transparent; }
 [data-bg="starry"] .month.planner { backdrop-filter: none; -webkit-backdrop-filter: none; }
+
+/* Starry: bigger, brighter stars drawn over the wallpaper */
+[data-bg="starry"] .bg::before { content: ""; position: absolute; inset: 0; pointer-events: none; filter: drop-shadow(0 0 2.5px rgba(255,255,255,.95));
+  background-image:
+    radial-gradient(2.6px 2.6px at 18px 26px, #fff 55%, transparent 100%), radial-gradient(2px 2px at 96px 142px, #fff 55%, transparent 100%),
+    radial-gradient(3.4px 3.4px at 150px 64px, #fff 50%, transparent 100%), radial-gradient(2.2px 2.2px at 58px 190px, #ffe6f2 55%, transparent 100%),
+    radial-gradient(2.8px 2.8px at 40px 90px, #fff 55%, transparent 100%), radial-gradient(2px 2px at 210px 30px, #ffeaf4 55%, transparent 100%),
+    radial-gradient(3.8px 3.8px at 120px 20px, #fff 50%, transparent 100%);
+  background-size: 230px 210px, 190px 250px, 310px 270px, 170px 230px, 270px 190px, 330px 290px, 410px 350px; }
+/* Starry: the calendar panel is clear glass (no blur, light tint) so the stars shine through the blocks */
+[data-bg="starry"] #view { backdrop-filter: none; -webkit-backdrop-filter: none; background: rgba(70,0,40,.26); }
