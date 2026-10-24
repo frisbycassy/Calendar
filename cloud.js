@@ -54,7 +54,7 @@
     return {
       groups: S.groups,
       cals: S.cals.map(c => c.source ? { ...c, source: { ...c.source, lastSync: undefined, error: undefined } } : c),
-      events: S.events.filter(e => !remote.has(e.calId) || e.icon || e.task || (e.doneDates && e.doneDates.length)),
+      events: S.events.filter(e => !remote.has(e.calId) || e.icon || e.task || (e.images && e.images.length) || (e.doneDates && e.doneDates.length)),
       settings: Object.fromEntries(Object.entries(S.settings).filter(([k]) => !DEVICE_ONLY.includes(k))),
     };
   }

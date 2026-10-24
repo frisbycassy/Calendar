@@ -76,6 +76,7 @@ const ICONS = {
   more: '<circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/><circle cx="5" cy="12" r="1.2"/>',
   edit: '<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>',
   eye: '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/>',
+  image: '<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/>',
   note: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6M16 13H8M16 17H8"/>',
   keyboard: '<rect x="2" y="5" width="20" height="14" rx="2.5"/><path d="M6 9h.01M10 9h.01M14 9h.01M18 9h.01M6 13h.01M18 13h.01M8 16h8M10 13h4"/>',
   user: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
@@ -1090,6 +1091,7 @@ function openPeek(o, anchor) {
       ${ev.reminder != null && !ev.allDay ? `<div class="pk-row">${svg('bell')}<div class="pk-main"><span>Reminder ${remText(ev.reminder).toLowerCase()}</span></div></div>` : ''}
       ${locBlock}
       ${peopleBlock(ev)}
+      ${ev.images?.length ? `<div class="pk-row">${svg('image')}<div class="pk-main pk-imgs">${ev.images.map((u, i) => `<img src="${u}" data-img="${i}" alt="Picture ${i + 1}">`).join('')}</div></div>` : ''}
       ${ev.notes ? `<div class="pk-row">${svg('note')}<div class="pk-main pk-notes">${linkify(ev.notes)}</div></div>` : ''}
       ${ev.task && !o.ro ? `<div class="pk-row">${svg('checkCircle')}<div class="pk-main"><button class="btn sm ${done ? 'primary' : ''}" data-pk="done">${svg('check')}<span>${done ? 'Done — tap to undo' : 'Mark as done'}</span></button></div></div>` : ''}
       ${src ? `<div class="pk-row">${svg(src.type === 'ics' ? 'link' : 'cloud')}<div class="pk-main"><span>Synced with ${provider || 'a calendar link'}${o.ro ? ' · read-only' : ''}</span>
@@ -1147,6 +1149,7 @@ function onPeekClick(e) {
 }
 
 /* ---------------- event editor ---------------- */
+let editImages = [];
 let editing = null, editIcon = '', editDays = [], editGuests = [];
 /* Guests (people added to an event) in the editor. */
 const EMAIL_RE = /^[^\s@<>,;]+@[^\s@<>,;]+\.[^\s@<>,;]+$/;
@@ -1210,6 +1213,7 @@ function openEditor(o, preset = {}) {
   $('#evRem').value = rem == null || rem === '' ? '' : String(rem);
   $('#evLoc').value = ev?.location || '';
   $('#evNotes').value = ev?.notes || '';
+  editImages = [...(ev?.images || [])]; drawEditImages();
   $('#evTask').checked = !!ev?.task;
   editIcon = ev?.icon || '';
   editGuests = clone(ev?.attendees || []);
@@ -1296,7 +1300,7 @@ function readForm() {
     repeat: rep, until: rep === 'none' ? '' : $('#evUntil').value,
     days: rep === 'weekly' || rep === 'biweekly' ? [...editDays].sort() : [],
     reminder: rem === '' ? null : +rem, location: $('#evLoc').value.trim(), notes: $('#evNotes').value,
-    task: $('#evTask').checked, icon: editIcon,
+    task: $('#evTask').checked, icon: editIcon, images: [...editImages],
     attendees: editGuests.map(a => ({ ...a })),
     ...($('#evNotify').checked && isSynced($('#evCal').value) ? { _notify: true } : {}),
   };
@@ -1338,13 +1342,43 @@ function applyToAll(o, data, related) {
   // The rest: same details and times, but their own dates and repeat settings.
   for (const x of related) {
     const b = clone(x), d0 = startOfDay(parse(x.start));
-    Object.assign(x, { title, calId, icon, allDay, reminder, location, notes, task,
+    Object.assign(x, { title, calId, icon, allDay, reminder, location, notes, task, images: data.images,
       start: ymd(d0) + 'T' + st, end: ymd(addDays(d0, span)) + 'T' + et });
     send(b, x);
   }
   for (const [b, x] of series.values()) Sync.pushSeries(b, x);
   if (moveBlocked) setTimeout(() => toast('Repeating Google/Outlook events stay in their calendar — your other changes were saved. To move the series, use “Open in Google”.', { icon: 'alert', ms: 9000 }), 300);
   return related.length + 1;
+}
+/* Pictures on an event: shrunk and kept inside the calendar (not sent to Google, but they sync between your devices). */
+const MAX_IMAGES = 6;
+function drawEditImages() {
+  $('#evImgs').innerHTML = editImages.map((u, i) => `<span class="img-th"><img src="${u}" alt=""><button type="button" data-rmimg="${i}" title="Remove">×</button></span>`).join('');
+}
+function shrinkImage(file) {
+  return new Promise(res => {
+    const url = URL.createObjectURL(file), im = new Image();
+    im.onload = () => {
+      const k = Math.min(1, 900 / Math.max(im.width, im.height)), c = document.createElement('canvas');
+      c.width = Math.round(im.width * k); c.height = Math.round(im.height * k);
+      const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height); g.drawImage(im, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(url); res(c.toDataURL('image/jpeg', .72));
+    };
+    im.onerror = () => { URL.revokeObjectURL(url); res(null); };
+    im.src = url;
+  });
+}
+async function addImages(files) {
+  for (const f of files) {
+    if (!/^image\//.test(f.type)) continue;
+    if (editImages.length >= MAX_IMAGES) { toast(`Up to ${MAX_IMAGES} pictures per event`, { icon: 'alert' }); break; }
+    const u = await shrinkImage(f); if (u) editImages.push(u);
+  }
+  drawEditImages();
+}
+function showLightbox(u) {
+  const d = document.createElement('div'); d.className = 'lightbox'; d.innerHTML = `<img src="${u}" alt="">`;
+  d.onclick = () => d.remove(); document.body.append(d);
 }
 function saveEditor(all = false) {
   const { o, isNew, related = [] } = editing;
@@ -2040,6 +2074,11 @@ function wire() {
     if (!editDays.length) editDays = [d];
     syncEditor();
   });
+  $('#evImgAdd').onclick = () => $('#evImgFile').click();
+  $('#evImgFile').onchange = async e => { await addImages([...e.target.files]); e.target.value = ''; };
+  $('#evImgs').onclick = e => { const b = e.target.closest('[data-rmimg]'); if (b) { editImages.splice(+b.dataset.rmimg, 1); drawEditImages(); } };
+  $('#evNotes').addEventListener('paste', e => { const f = [...(e.clipboardData?.files || [])].filter(x => /^image\//.test(x.type)); if (f.length) { e.preventDefault(); addImages(f); } });
+  $('#peek').addEventListener('click', e => { const im = e.target.closest('[data-img]'); if (im) showLightbox(im.src); });
   $('#evIconBtn').onclick = () => {
     const p = $('#evIconPop');
     if (!p.hidden) { p.hidden = true; return; }

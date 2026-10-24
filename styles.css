@@ -861,3 +861,16 @@ kbd { display: inline-block; min-width: 22px; text-align: center; padding: 2px 6
 /* each birthday gets its own cupcake, tinted a different colour */
 .cell .ch .bday-btn { filter: hue-rotate(var(--hue, 0deg)) saturate(1.15) drop-shadow(0 0 2px rgba(255,255,255,.9)); }
 .cell .ch .bday-btn + .bday-btn { margin-left: 0; }
+
+/* pictures on events */
+.img-box { flex: 1; min-width: 0; }
+.img-grid { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 6px; }
+.img-grid:empty { display: none; }
+.img-th { position: relative; width: 64px; height: 64px; border-radius: 10px; overflow: hidden; border: 1px solid var(--line-2); }
+.img-th img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.img-th button { position: absolute; top: 2px; right: 2px; width: 18px; height: 18px; border-radius: 50%; border: 0; background: rgba(0,0,0,.65); color: #fff; font-size: 13px; line-height: 18px; padding: 0; cursor: pointer; }
+.img-hint { color: var(--muted); font-size: 12px; }
+.pk-imgs { display: flex; flex-wrap: wrap; gap: 6px; }
+.pk-imgs img { max-width: 100%; max-height: 150px; border-radius: 10px; cursor: zoom-in; object-fit: cover; }
+.lightbox { position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,.82); display: grid; place-items: center; cursor: zoom-out; }
+.lightbox img { max-width: 94vw; max-height: 92vh; border-radius: 12px; }

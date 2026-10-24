@@ -232,7 +232,7 @@ const Sync = (() => {
     for (const e of evs) {
       tidyEvent(e);
       const o = old.get(e.id) || byName.get((e.title || '').trim().toLowerCase());
-      if (o) { e.icon = o.icon || ''; e.task = !!o.task; e.doneDates = o.doneDates || []; }
+      if (o) { e.icon = o.icon || ''; e.images = o.images || undefined; e.task = !!o.task; e.doneDates = o.doneDates || []; }
       else if (/^to[\s-]?do$/i.test(cal.name.trim())) e.task = true; // anything new in a "To Do" calendar gets a tick circle
     }
     S.events = S.events.filter(e => e.calId !== cal.id).concat(evs);

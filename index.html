@@ -17,7 +17,7 @@ try {
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Macondo&family=Rye&family=Patrick+Hand&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=20261024154206">
+<link rel="stylesheet" href="styles.css?v=20261024154516">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-192.png">
 <meta name="theme-color" content="#ffc4dd">
@@ -147,6 +147,7 @@ try {
       </div>
       <div class="row"><span data-icon="checkCircle"></span><label class="toggle"><input type="checkbox" id="evTask"><i></i>Task — show a tick box so I can mark it done</label></div>
       <div class="row top"><span data-icon="note"></span><textarea id="evNotes" rows="3" placeholder="Add notes"></textarea></div>
+      <div class="row top" id="evImgRow"><span data-icon="image"></span><div class="img-box"><div id="evImgs" class="img-grid"></div><button type="button" class="btn sm" id="evImgAdd">Add picture</button><small class="img-hint"> or paste one into the notes</small><input type="file" id="evImgFile" accept="image/*" multiple hidden></div></div>
       <div class="row series-note" id="seriesRow" hidden><span data-icon="repeat"></span><span id="seriesText"></span></div>
       <div class="row remote-note" id="remoteRow" hidden></div>
       <div class="row ro-note" id="roNote"><span data-icon="eye"></span>This calendar is read-only.</div>
@@ -278,9 +279,9 @@ try {
   </form>
 </dialog>
 
-<script src="config.js?v=20261024154206"></script>
-<script src="app.js?v=20261024154206"></script>
-<script src="cloud.js?v=20261024154206"></script>
-<script src="sync.js?v=20261024154206"></script>
+<script src="config.js?v=20261024154516"></script>
+<script src="app.js?v=20261024154516"></script>
+<script src="cloud.js?v=20261024154516"></script>
+<script src="sync.js?v=20261024154516"></script>
 </body>
 </html>
