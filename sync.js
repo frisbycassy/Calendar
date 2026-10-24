@@ -110,6 +110,7 @@ const Sync = (() => {
           })),
           organizer: g.organizer && !g.organizer.self ? (g.organizer.displayName || g.organizer.email || '') : '',
           meet: g.hangoutLink || '',
+          ...(/<img[^>]+src=["']?cid:/i.test(g.description || '') ? { wantImg: ((g.description || '').match(/src=["']?cid:([^"'>\s]+)/gi) || []).map(s => s.replace(/^.*cid:/i, '')) } : {}),
         };
       });
     },
@@ -232,7 +233,7 @@ const Sync = (() => {
     for (const e of evs) {
       tidyEvent(e);
       const o = old.get(e.id) || byName.get((e.title || '').trim().toLowerCase());
-      if (o) { e.icon = o.icon || ''; e.images = o.images || undefined; e.task = !!o.task; e.doneDates = o.doneDates || []; }
+      if (o) { e.icon = o.icon || ''; e.images = o.images || undefined; e.imgTried = o.imgTried; e.task = !!o.task; e.doneDates = o.doneDates || []; }
       else if (/^to[\s-]?do$/i.test(cal.name.trim())) e.task = true; // anything new in a "To Do" calendar gets a tick circle
     }
     S.events = S.events.filter(e => e.calId !== cal.id).concat(evs);
@@ -264,6 +265,7 @@ const Sync = (() => {
         action: ['Restore', () => { try { Object.assign(S, JSON.parse(localStorage.getItem('glasscal.backup-before-removing-samples'))); S.settings.samplesRemoved = true; save(); render(); } catch { toast('Could not find the backup', { icon: 'alert' }); } }] });
     }
     save(); render();
+    fetchInvitePictures();
     if ($('#dlgSync').open) drawDialog();
     if (errors.length) toast(`Sync problem — ${errors[0]}`, { icon: 'alert', ms: 9000 });
     else if (loud) toast('Everything is up to date', { icon: 'cloud' });
@@ -397,6 +399,64 @@ const Sync = (() => {
       } catch (e) { failToast(cal.name, e); }
       finally { scheduleResync([cal]); }
     });
+  }
+
+  /* ---------- pictures from invitation emails (Gmail) ---------- */
+  // Google keeps only a placeholder (cid:…) for a picture that came inside an invitation. The real picture is in the
+  // invitation email, so we look it up in Gmail (read-only), shrink it and keep it on the event.
+  const GMAIL = 'https://gmail.googleapis.com/gmail/v1/users/me';
+  const b64ToBlob = (b64, type) => {
+    const bin = atob(b64.replace(/-/g, '+').replace(/_/g, '/')), a = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) a[i] = bin.charCodeAt(i);
+    return new Blob([a], { type });
+  };
+  function imageParts(part, out = []) {
+    if (/^image\//.test(part.mimeType || '') && part.body && (part.body.attachmentId || part.body.data) && (part.body.size || 0) > 6000) out.push(part);
+    (part.parts || []).forEach(p => imageParts(p, out));
+    return out;
+  }
+  const cidOf = p => ((p.headers || []).find(h => /^content-id$/i.test(h.name))?.value || '').replace(/[<>]/g, '');
+  async function pictureFromMail(acc, ev) {
+    const title = (ev.title || '').replace(/["()]/g, ' ').trim();
+    const q = encodeURIComponent(`subject:(${title}) newer_than:2y`);
+    const list = await api(acc, 'GET', `${GMAIL}/messages?maxResults=6&q=${q}`);
+    const pics = [];
+    for (const m of list.messages || []) {
+      const msg = await api(acc, 'GET', `${GMAIL}/messages/${m.id}?format=full`);
+      let parts = imageParts(msg.payload);
+      const wanted = parts.filter(p => (ev.wantImg || []).includes(cidOf(p)));
+      if (wanted.length) parts = wanted;
+      for (const p of parts) {
+        let data = p.body.data;
+        if (!data) data = (await api(acc, 'GET', `${GMAIL}/messages/${m.id}/attachments/${p.body.attachmentId}`)).data;
+        const u = await shrinkImage(b64ToBlob(data, p.mimeType));
+        if (u) pics.push(u);
+        if (pics.length >= 6) break;
+      }
+      if (pics.length) break; // the invitation that holds the picture
+    }
+    return pics;
+  }
+  let hunting = false;
+  async function fetchInvitePictures() {
+    if (hunting) return; hunting = true;
+    try {
+      const todo = S.events.filter(e => e.wantImg && !(e.images || []).length && !e.imgTried).slice(0, 10);
+      for (const ev of todo) {
+        const cal = calById(ev.calId); if (!cal?.source?.account) continue;
+        try {
+          const pics = await pictureFromMail(cal.source.account, ev);
+          if (pics.length) ev.images = pics;
+          ev.imgTried = Date.now();
+        } catch (e) {
+          if (/scope|permission|insufficient|forbidden|not enabled|has not been used|403/i.test(e.message)) {
+            if (!S.settings.gmailAsked) { S.settings.gmailAsked = Date.now(); toast('To show pictures from invitation emails, reconnect Google once (Settings → Sync).', { icon: 'cloud', ms: 12000 }); }
+            break;
+          }
+        }
+      }
+      save(); render();
+    } finally { hunting = false; }
   }
 
   /* ---------- put the built-in holidays into Google (two new calendars) ---------- */
@@ -649,7 +709,7 @@ const Sync = (() => {
   }
 
   return {
-    init, syncAll, pushSave, pushSeries, removeSeries, openDialog, forget, isRemoteCal, holidaysToGoogle,
+    init, syncAll, pushSave, pushSeries, removeSeries, openDialog, forget, isRemoteCal, holidaysToGoogle, fetchInvitePictures,
     get online() { return !!status; },
     providerName: cal => NAMES[cal?.source?.type] || '',
   };
