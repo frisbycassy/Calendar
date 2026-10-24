@@ -1950,6 +1950,16 @@ function wire() {
 
   // main view clicks
   const v = $('#view');
+  // Swipe left / right on a phone: next / previous day, week, month… (same as the arrows)
+  {
+    let sx = 0, sy = 0, st = 0, ok = false;
+    v.addEventListener('touchstart', e => { const t = e.touches[0]; sx = t.clientX; sy = t.clientY; st = Date.now(); ok = e.touches.length === 1 && !e.target.closest('input, textarea, select, iframe, .ev, .rsz'); }, { passive: true });
+    v.addEventListener('touchend', e => {
+      if (!ok) return; ok = false;
+      const t = e.changedTouches[0], dx = t.clientX - sx, dy = t.clientY - sy;
+      if (Math.abs(dx) > 70 && Math.abs(dx) > Math.abs(dy) * 1.6 && Date.now() - st < 700) go(dx < 0 ? 1 : -1);
+    }, { passive: true });
+  }
   v.addEventListener('click', e => {
     const nav = e.target.closest('[data-nav]');
     if (nav) { go(+nav.dataset.nav); return; }

@@ -891,3 +891,11 @@ kbd { display: inline-block; min-width: 22px; text-align: center; padding: 2px 6
 .loc-sug b { display: block; font-size: 13.5px; }
 .loc-sug small { display: block; font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .loc-credit { font-size: 10.5px; color: var(--faint, var(--muted)); text-align: right; padding: 2px 8px 4px; }
+
+/* phones: the title shrinks (and wraps) so the arrows always stay on screen */
+@media (max-width: 700px) {
+  .vhead { gap: 4px; padding: 8px 6px 4px; }
+  .vhead .mtitle { flex: 1 1 0; font-size: clamp(15px, 5.2vw, 24px); letter-spacing: .05em; overflow-wrap: anywhere; white-space: normal; }
+  .nav-arrow { width: 40px; height: 40px; flex: 0 0 40px; background: var(--accent-soft); }
+  .nav-arrow .i { width: 26px; height: 26px; }
+}
