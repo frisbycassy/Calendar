@@ -822,3 +822,9 @@ kbd { display: inline-block; min-width: 22px; text-align: center; padding: 2px 6
 [data-bg="starry"], [data-theme="dark"][data-bg="starry"] { --b1: #d9608d; --b2: #a8366a; --b3: #7a2150; --b4: #e9799f; --accent: #ff5c95; --accent-soft: rgba(255,92,149,.14);
   --base: #6d2048 url(bg-starry.webp) center / cover no-repeat; }
 [data-bg="starry"] .bg i { opacity: 0; }
+
+/* Starry: pinker wallpaper, and see-through day blocks so the stars show */
+[data-bg="starry"], [data-theme="dark"][data-bg="starry"] { --base: linear-gradient(rgba(255,60,140,.22), rgba(255,60,140,.22)), #7a2552 url(bg-starry.webp) center / cover no-repeat; }
+[data-look="planner"][data-bg="starry"][data-theme="dark"] { --paper: rgba(255,170,210,.05); --we-bg: rgba(40,0,25,.2); --grid: rgba(255,255,255,.34); }
+[data-bg="starry"] .month.planner .cell { background-color: transparent; }
+[data-bg="starry"] .month.planner { backdrop-filter: none; -webkit-backdrop-filter: none; }
