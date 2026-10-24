@@ -841,7 +841,7 @@ kbd { display: inline-block; min-width: 22px; text-align: center; padding: 2px 6
 [data-bg="starry"] #view { backdrop-filter: none; -webkit-backdrop-filter: none; background: rgba(60,0,35,.46); }
 /* Starry: keep past (greyed) text easy to read on the pink */
 [data-bg="starry"] .cell.past > * { opacity: .9; filter: none; }
-[data-bg="starry"] .chip.pastev .ti, [data-bg="starry"] .chip.pastev .t { color: rgba(255,255,255,.78) !important; }
+[data-bg="starry"] .chip.pastev .ti, [data-bg="starry"] .chip.pastev .t { color: #9d97b5 !important; }
 
 /* Starry: two star layers that fade in and out slowly, out of step with each other */
 [data-bg="starry"] .bg::before, [data-bg="starry"] .bg::after { content: ""; position: absolute; inset: 0; pointer-events: none; filter: drop-shadow(0 0 2px rgba(255,255,255,.95)); }
@@ -854,3 +854,5 @@ kbd { display: inline-block; min-width: 22px; text-align: center; padding: 2px 6
 @keyframes twinkleA { from { opacity: .25; } to { opacity: 1; } }
 @keyframes twinkleB { from { opacity: 1; } to { opacity: .2; } }
 @media (prefers-reduced-motion: reduce) { [data-bg="starry"] .bg::before, [data-bg="starry"] .bg::after { animation: none; } }
+/* Starry: a dark shadow around all calendar text so it stays readable in front of the stars */
+[data-bg="starry"] .month.planner .cell, [data-bg="starry"] .month.planner .wd, [data-bg="starry"] .ym-d { text-shadow: 0 0 3px rgba(20,0,15,.95), 0 1px 2px rgba(20,0,15,.9), 0 0 6px rgba(20,0,15,.6); }
