@@ -857,3 +857,7 @@ kbd { display: inline-block; min-width: 22px; text-align: center; padding: 2px 6
 [data-bg="starry"] .month.planner .cell, [data-bg="starry"] .month.planner .wd, [data-bg="starry"] .ym-d { text-shadow: 0 0 3px rgba(20,0,15,.6), 0 1px 2px rgba(20,0,15,.55), 0 0 6px rgba(20,0,15,.3); }
 /* Starry: twinkle even when the device is set to reduce motion (it is a soft fade, not movement) */
 @media (prefers-reduced-motion: reduce) { [data-bg="starry"] .bg::before { animation: twinkleA 1.3s ease-in-out infinite alternate !important; } [data-bg="starry"] .bg::after { animation: twinkleB 2s ease-in-out infinite alternate !important; } }
+
+/* each birthday gets its own cupcake, tinted a different colour */
+.cell .ch .bday-btn { filter: hue-rotate(var(--hue, 0deg)) saturate(1.15) drop-shadow(0 0 2px rgba(255,255,255,.9)); }
+.cell .ch .bday-btn + .bday-btn { margin-left: 0; }

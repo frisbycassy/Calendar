@@ -574,7 +574,9 @@ function dayCell(d, list, today, draw) {
   // timed events first (in time order), all-day ones underneath
   const rest = list.filter(o => !isBirthday(o) && !isHoliday(o)).sort((a, b) => (multiDay(a) - multiDay(b)) || (a.start - b.start));
   const holLbl = hols.map(o => `<button class="hol-lbl" data-key="${esc(o.key)}" style="--c:${isSchoolHoliday(o) || isOwnHolCal(o.cal) ? HOLIDAY_GREY : o.cal.color}" title="${esc(o.ev.title)}">${esc(o.ev.title)}</button>`).join('');
-  const cake = bdays.length ? `<button class="bday-btn" data-bday="${k}" title="${esc(bdays.map(o => o.ev.title).join(', '))}">🧁${bdays.length > 1 ? `<b>${bdays.length}</b>` : ''}</button>` : '';
+  // one cupcake per birthday, each a different colour
+  const HUES = [0, 150, 230, 300, 60, 190];
+  const cake = bdays.map((o, i) => `<button class="bday-btn" data-bday="${k}" style="--hue:${HUES[i % HUES.length]}deg" title="${esc(o.ev.title)}">🧁</button>`).join('');
   return `<div class="cell ${k === today ? 'today' : ''} ${k < today ? 'past' : ''} ${[0, 6].includes(d.getDay()) || hols.some(isDayOff) ? 'we' : ''} ${cake ? 'has-cake' : ''}" data-day="${k}">
     <div class="ch"><button class="dnum" data-goto="${k}" title="Open day">${d.getDate()}</button>${cake}${holLbl}
     <button class="cell-add" title="New event">${svg('plus')}</button></div>
