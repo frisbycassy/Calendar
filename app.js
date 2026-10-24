@@ -572,8 +572,9 @@ function dayCell(d, list, today, draw) {
   const k = ymd(d);
   const bdays = list.filter(isBirthday);
   const hols = list.filter(o => !isBirthday(o) && isHoliday(o));
-  // timed events first (in time order), all-day ones underneath
-  const rest = list.filter(o => !isBirthday(o) && !isHoliday(o)).sort((a, b) => (multiDay(a) - multiDay(b)) || (a.start - b.start));
+  // ticked-off all-day tasks go to the top, then timed events (in time order), then all-day ones still to do
+  const rank = o => multiDay(o) ? (isDone(o) ? 0 : 2) : 1;
+  const rest = list.filter(o => !isBirthday(o) && !isHoliday(o)).sort((a, b) => (rank(a) - rank(b)) || (a.start - b.start));
   const holLbl = hols.map(o => `<button class="hol-lbl" data-key="${esc(o.key)}" style="--c:${isSchoolHoliday(o) || isOwnHolCal(o.cal) ? HOLIDAY_GREY : o.cal.color}" title="${esc(o.ev.title)}">${esc(o.ev.title)}</button>`).join('');
   // one cupcake per birthday, each a different colour
   const HUES = [0, 150, 230, 300, 60, 190];
