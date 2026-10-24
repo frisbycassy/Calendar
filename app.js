@@ -576,7 +576,7 @@ function dayCell(d, list, today, draw) {
   const holLbl = hols.map(o => `<button class="hol-lbl" data-key="${esc(o.key)}" style="--c:${isSchoolHoliday(o) || isOwnHolCal(o.cal) ? HOLIDAY_GREY : o.cal.color}" title="${esc(o.ev.title)}">${esc(o.ev.title)}</button>`).join('');
   // one cupcake per birthday, each a different colour
   const HUES = [0, 150, 230, 300, 60, 190];
-  const cake = bdays.map((o, i) => `<button class="bday-btn" data-bday="${k}" style="--hue:${HUES[i % HUES.length]}deg" title="${esc(o.ev.title)}">🧁</button>`).join('');
+  const cake = bdays.map((o, i) => `<button class="bday-btn" data-bday="${k}" data-key="${esc(o.key)}" style="--hue:${HUES[i % HUES.length]}deg" title="${esc(o.ev.title)}">🧁</button>`).join('');
   return `<div class="cell ${k === today ? 'today' : ''} ${k < today ? 'past' : ''} ${[0, 6].includes(d.getDay()) || hols.some(isDayOff) ? 'we' : ''} ${cake ? 'has-cake' : ''}" data-day="${k}">
     <div class="ch"><button class="dnum" data-goto="${k}" title="Open day">${d.getDate()}</button>${cake}${holLbl}
     <button class="cell-add" title="New event">${svg('plus')}</button></div>
@@ -957,10 +957,11 @@ function go(dir) {
 function goToday() { cur = startOfDay(new Date()); miniCur = new Date(cur); gridScroll = null; render(); }
 
 /* ---------------- popover (+N more) ---------------- */
-function showDayPop(k, anchor, onlyBirthdays) {
+function showDayPop(k, anchor, onlyBirthdays, onlyKey) {
   const pop = $('#pop'), d = parse(k);
   let list = getOcc(d, addDays(d, 1));
   if (onlyBirthdays) list = list.filter(isBirthday);
+  if (onlyKey) list = list.filter(o => o.key === onlyKey); // one cupcake = just its own birthday
   else if (view === 'month') list = list.filter(o => !isBirthday(o));
   const head = onlyBirthdays
     ? `🧁 ${list.length > 1 ? `${list.length} birthdays` : 'Birthday'} · ${fmt(d, { day: 'numeric', month: 'long' })}`
@@ -1923,7 +1924,7 @@ function wire() {
     const ch = e.target.closest('.chip, .ag-item, .hol-lbl');
     if (ch) { const o = occMap.get(ch.dataset.key); if (o) openPeek(o, ch); return; }
     const cake = e.target.closest('.bday-btn, .bday-chip');
-    if (cake) { showDayPop(cake.dataset.bday, cake, true); return; }
+    if (cake) { showDayPop(cake.dataset.bday, cake, true, cake.dataset.key); return; }
     const more = e.target.closest('.more-btn');
     if (more) { showDayPop(more.dataset.day, more); return; }
     const gt = e.target.closest('[data-goto]');
