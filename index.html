@@ -17,7 +17,7 @@ try {
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Macondo&family=Rye&family=Patrick+Hand&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css?v=20261024160416">
+<link rel="stylesheet" href="styles.css?v=20261024161325">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-192.png">
 <meta name="theme-color" content="#ffc4dd">
@@ -136,7 +136,7 @@ try {
           <option value="10080">1 week before</option>
         </select>
       </div>
-      <div class="row"><span data-icon="pin"></span><input id="evLoc" placeholder="Add location or meeting link"></div>
+      <div class="row loc-row"><span data-icon="pin"></span><input id="evLoc" placeholder="Add location or meeting link" autocomplete="off"><div id="locSug" class="loc-sug" hidden></div></div>
       <div class="row top"><span data-icon="users"></span>
         <div class="guests">
           <div class="guest-list" id="evGuestList"></div>
@@ -279,9 +279,9 @@ try {
   </form>
 </dialog>
 
-<script src="config.js?v=20261024160416"></script>
-<script src="app.js?v=20261024160416"></script>
-<script src="cloud.js?v=20261024160416"></script>
-<script src="sync.js?v=20261024160416"></script>
+<script src="config.js?v=20261024161325"></script>
+<script src="app.js?v=20261024161325"></script>
+<script src="cloud.js?v=20261024161325"></script>
+<script src="sync.js?v=20261024161325"></script>
 </body>
 </html>

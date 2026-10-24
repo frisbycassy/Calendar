@@ -2077,6 +2077,35 @@ function wire() {
     if (!editDays.length) editDays = [d];
     syncEditor();
   });
+  // Place suggestions while typing a location (OpenStreetMap's free search, biased to South Africa).
+  {
+    const inp = $('#evLoc'), box = $('#locSug'); let timer = 0, seq = 0;
+    const hide = () => { box.hidden = true; box.innerHTML = ''; };
+    inp.addEventListener('input', () => {
+      clearTimeout(timer);
+      const q = inp.value.trim();
+      if (q.length < 3 || /^https?:\/\//i.test(q)) return hide();
+      timer = setTimeout(async () => {
+        const my = ++seq;
+        try {
+          const r = await fetch('https://nominatim.openstreetmap.org/search?format=jsonv2&limit=6&accept-language=en&viewbox=16,-35,33,-22&q=' + encodeURIComponent(q));
+          const list = await r.json();
+          if (my !== seq || !list.length) return my === seq ? hide() : 0;
+          box.innerHTML = list.map(p => {
+            const parts = p.display_name.split(', ');
+            return `<button type="button" data-place="${esc(p.display_name)}"><b>${esc(p.name || parts[0])}</b><small>${esc(parts.slice(p.name ? 1 : 1).join(', '))}</small></button>`;
+          }).join('') + '<div class="loc-credit">Places from OpenStreetMap</div>';
+          box.hidden = false;
+        } catch { hide(); }
+      }, 450);
+    });
+    box.addEventListener('mousedown', e => {
+      const b = e.target.closest('[data-place]'); if (!b) return;
+      e.preventDefault(); inp.value = b.dataset.place; hide();
+    });
+    inp.addEventListener('blur', () => setTimeout(hide, 150));
+    inp.addEventListener('keydown', e => { if (e.key === 'Escape' && !box.hidden) { e.stopPropagation(); hide(); } });
+  }
   $('#evImgAdd').onclick = () => $('#evImgFile').click();
   $('#evImgFile').onchange = async e => { await addImages([...e.target.files]); e.target.value = ''; };
   $('#evImgs').onclick = e => { const b = e.target.closest('[data-rmimg]'); if (b) { editImages.splice(+b.dataset.rmimg, 1); drawEditImages(); } };

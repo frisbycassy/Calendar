@@ -881,3 +881,13 @@ kbd { display: inline-block; min-width: 22px; text-align: center; padding: 2px 6
 .pk-imgs .btn { margin-top: 8px; }
 .lightbox.many { display: block; overflow-y: auto; padding: 24px 0; text-align: center; }
 .lightbox.many img { display: block; margin: 0 auto 16px; max-width: 94vw; max-height: none; }
+
+/* place suggestions under the location box */
+.loc-row { position: relative; }
+.loc-row input { flex: 1; }
+.loc-sug { position: absolute; left: 30px; right: 0; top: calc(100% + 4px); z-index: 30; max-height: 260px; overflow-y: auto; background: var(--glass-3, #2a2240); border: 1px solid var(--line-2); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,.35); padding: 4px; backdrop-filter: blur(14px); }
+.loc-sug button { display: block; width: 100%; text-align: left; border: 0; background: none; color: inherit; padding: 8px 10px; border-radius: 8px; cursor: pointer; }
+.loc-sug button:hover { background: var(--accent-soft); }
+.loc-sug b { display: block; font-size: 13.5px; }
+.loc-sug small { display: block; font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.loc-credit { font-size: 10.5px; color: var(--faint, var(--muted)); text-align: right; padding: 2px 8px 4px; }
