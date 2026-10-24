@@ -127,11 +127,12 @@ const EMOJIS = ['📅', '⭐', '❤️', '🎂', '🎉', '🎁', '💍', '👥',
   '🚗', '✈️', '🧳', '🎒', '🧒', '🍭', '👶', '⛪', '✅', '⏰', '🌙', '☀️', '🏖️'];
 const CAL_EMOJIS = ['', '📅', '💼', '🏠', '👪', '🧒', '🍭', '🎓', '🎂', '✅', '⚽', '❤️', '⭐', '🎵', '🩺', '✈️', '🏖️', '💻', '🛒', '🐾'];
 const COLORS = ['#e8467c', '#d6336c', '#f76707', '#f59f00', '#fab005', '#40c057', '#12b886', '#15aabf', '#228be6', '#4c6ef5', '#7950f2', '#be4bdb', '#868e96', '#a0522d'];
-const BGS = { blossom: 'Blossom', ocean: 'Ocean', aurora: 'Aurora', sunset: 'Sunset', graphite: 'Graphite' };
+const BGS = { blossom: 'Blossom', ocean: 'Ocean', aurora: 'Aurora', sunset: 'Sunset', graphite: 'Graphite', starry: 'Starry' };
 const BG_PREVIEW = {
   blossom: 'linear-gradient(135deg,#ff9ac1,#c79bff,#ffc58f)', ocean: 'linear-gradient(135deg,#7cc4fa,#5fe0c9,#9aa5ff)',
   aurora: 'linear-gradient(135deg,#6be8b8,#a98bff,#6fd7fa)', sunset: 'linear-gradient(135deg,#ff9a6b,#ff7aa0,#ffd27a)',
   graphite: 'linear-gradient(135deg,#c6ccd8,#9aa4b8,#dfe3ea)',
+  starry: 'url(bg-starry.webp) center/cover',
 };
 
 function eventIcon(ev, cal) {

@@ -817,3 +817,8 @@ kbd { display: inline-block; min-width: 22px; text-align: center; padding: 2px 6
 /* ended events: one line through the whole entry (time + name) */
 .chip.pastev .ti, .chip.pastev .tt { text-decoration: line-through; text-decoration-thickness: 1.5px; }
 .chip.pastev .tt { text-decoration: line-through !important; }
+
+/* Starry: the pink starry wallpaper from the Discord theme */
+[data-bg="starry"], [data-theme="dark"][data-bg="starry"] { --b1: #d9608d; --b2: #a8366a; --b3: #7a2150; --b4: #e9799f; --accent: #ff5c95; --accent-soft: rgba(255,92,149,.14);
+  --base: #6d2048 url(bg-starry.webp) center / cover no-repeat; }
+[data-bg="starry"] .bg i { opacity: 0; }
