@@ -2066,20 +2066,7 @@ function wire() {
   ['#evAll', '#evRep', '#evCal'].forEach(s => $(s).addEventListener('change', syncEditor));
   $('#evTitle').addEventListener('input', () => { if (!editIcon) syncEditor(); });
   $('#evAll').addEventListener('change', () => { if (!$('#evAll').checked && $('#evRem').value === '') $('#evRem').value = S.settings.defaultReminder ?? ''; });
-  let lastStart = null;
-  const keepDuration = () => {
-    const s = parse(`${$('#evSD').value}T${$('#evST').value || '00:00'}`);
-    if (lastStart) {
-      const e = parse(`${$('#evED').value}T${$('#evET').value || '00:00'}`);
-      const ne = new Date(+e + (s - lastStart));
-      $('#evED').value = ymd(ne); $('#evET').value = hm(ne);
-    }
-    lastStart = s;
-  };
-  ['#evSD', '#evST'].forEach(s => {
-    $(s).addEventListener('focus', () => lastStart = parse(`${$('#evSD').value}T${$('#evST').value || '00:00'}`));
-    $(s).addEventListener('change', keepDuration);
-  });
+  // Changing the start time never moves the end time: that is left for you to set.
   $('#evDays').addEventListener('click', e => {
     const b = e.target.closest('[data-d]'); if (!b) return;
     const d = +b.dataset.d;
