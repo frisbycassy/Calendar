@@ -1091,7 +1091,7 @@ function openPeek(o, anchor) {
       ${ev.reminder != null && !ev.allDay ? `<div class="pk-row">${svg('bell')}<div class="pk-main"><span>Reminder ${remText(ev.reminder).toLowerCase()}</span></div></div>` : ''}
       ${locBlock}
       ${peopleBlock(ev)}
-      ${ev.images?.length ? `<div class="pk-row">${svg('image')}<div class="pk-main pk-imgs">${ev.images.map((u, i) => `<img src="${u}" data-img="${i}" alt="Picture ${i + 1}">`).join('')}</div></div>` : ''}
+      ${ev.images?.length ? `<div class="pk-row">${svg('image')}<div class="pk-main pk-imgs"><img class="pk-hero" src="${ev.images[0]}" data-img="0" alt="Picture 1">${ev.images.length > 1 ? `<button type="button" class="btn sm" data-viewall="1">${svg('image')}<span>View all ${ev.images.length} pictures</span></button>` : ''}</div></div>` : ''}
       ${ev.notes ? `<div class="pk-row">${svg('note')}<div class="pk-main pk-notes">${linkify(ev.notes)}</div></div>` : ''}
       ${ev.task && !o.ro ? `<div class="pk-row">${svg('checkCircle')}<div class="pk-main"><button class="btn sm ${done ? 'primary' : ''}" data-pk="done">${svg('check')}<span>${done ? 'Done — tap to undo' : 'Mark as done'}</span></button></div></div>` : ''}
       ${src ? `<div class="pk-row">${svg(src.type === 'ics' ? 'link' : 'cloud')}<div class="pk-main"><span>Synced with ${provider || 'a calendar link'}${o.ro ? ' · read-only' : ''}</span>
@@ -1376,9 +1376,12 @@ async function addImages(files) {
   }
   drawEditImages();
 }
-function showLightbox(u) {
-  const d = document.createElement('div'); d.className = 'lightbox'; d.innerHTML = `<img src="${u}" alt="">`;
+function showLightbox(list, start = 0) {
+  list = [].concat(list);
+  const d = document.createElement('div'); d.className = 'lightbox' + (list.length > 1 ? ' many' : '');
+  d.innerHTML = list.map(u => `<img src="${u}" alt="">`).join('');
   d.onclick = () => d.remove(); document.body.append(d);
+  if (start) d.children[start]?.scrollIntoView();
 }
 function saveEditor(all = false) {
   const { o, isNew, related = [] } = editing;
@@ -2078,7 +2081,11 @@ function wire() {
   $('#evImgFile').onchange = async e => { await addImages([...e.target.files]); e.target.value = ''; };
   $('#evImgs').onclick = e => { const b = e.target.closest('[data-rmimg]'); if (b) { editImages.splice(+b.dataset.rmimg, 1); drawEditImages(); } };
   $('#evNotes').addEventListener('paste', e => { const f = [...(e.clipboardData?.files || [])].filter(x => /^image\//.test(x.type)); if (f.length) { e.preventDefault(); addImages(f); } });
-  $('#peek').addEventListener('click', e => { const im = e.target.closest('[data-img]'); if (im) showLightbox(im.src); });
+  $('#peek').addEventListener('click', e => {
+    const all = e.target.closest('[data-viewall]'); const im = e.target.closest('[data-img]');
+    const imgs = peekOcc?.ev?.images || [];
+    if (all) showLightbox(imgs); else if (im) showLightbox(im.src);
+  });
   $('#evIconBtn').onclick = () => {
     const p = $('#evIconPop');
     if (!p.hidden) { p.hidden = true; return; }
